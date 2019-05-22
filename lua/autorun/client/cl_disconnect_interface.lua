@@ -1,1 +1,1 @@
-RunConsoleCommand("cl_timeout '99999999999'")
+RunConsoleCommand("cl_timeout '240'")
