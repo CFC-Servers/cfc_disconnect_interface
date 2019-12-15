@@ -24,8 +24,8 @@ surface.CreateFont( "CFC_Button",
     }
 )
 
--- local GAME_URL = "https://cdn.cfcservers.org/media/dinosaur/index.html"
-local GAME_URL = "http://local:8080/"
+local GAME_URL = "https://cdn.cfcservers.org/media/dinosaur/index.html"
+-- local GAME_URL = "http://local:8080/"
 local GAME_WIDTH = 1256
 
 local interfaceDerma = false
