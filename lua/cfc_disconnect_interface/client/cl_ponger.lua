@@ -1,9 +1,11 @@
 include("cfc_disconnect_interface/client/cl_api.lua")
 
+local net, hook, timer = net, hook, timer
+
 local GRACE_TIME = 3.5 -- How many seconds of lag should we have before showing the panel?
 local PING_MISS = 2 -- How many pings can we miss on join?
 
-local API_TIMEOUT = 15 -- How often to call the api
+local API_TIMEOUT = 5 -- How often to call the api
 
 local lastPing
 local lastApiCall
@@ -45,6 +47,7 @@ local function checkCrashTick()
 	if timeout > GRACE_TIME then
 		crashTick(timeout)
 	else
+		-- Server recovered while crashApi was running, cancel the request
 		if crashApi.getState() ~= crashApi.INACTIVE then
 			crashApi.cancelPing();
 		end
