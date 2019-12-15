@@ -24,10 +24,14 @@ surface.CreateFont( "CFC_Button",
     }
 )
 
+-- local GAME_URL = "https://cdn.cfcservers.org/media/dinosaur/index.html"
+local GAME_URL = "http://local:8080/"
+local GAME_WIDTH = 1256
+
 local interfaceDerma = false
 
 local TIME_TO_RESTART = 10
-local timeDown
+local timeDown = 0
 local apiState
 local previouslyShown = false
 
@@ -258,8 +262,9 @@ local function populateBody(body)
 	gamePanel.Paint = nil
 
 	local gameHtml = vgui.Create( "DHTML", gamePanel )
-	gameHtml:Dock( FILL )
-	gameHtml:OpenURL("https://cdn.cfcservers.org/media/dinosaur/index.html")
+	gameHtml:SetSize( gamePanel:GetSize() )
+	gameHtml:SetPos( (gamePanel:GetWide() - GAME_WIDTH) / 2, 0 )
+	gameHtml:OpenURL( GAME_URL )
 	function gameHtml:Think()
 		if not gameHtml:HasFocus() then gameHtml:RequestFocus() end
 	end
@@ -309,6 +314,9 @@ local function createInterface()
 		interfaceDerma = nil
 	end
 end
+
+concommand.Add("createInterface", createInterface)
+concommand.Add("closeInterface", function() interfaceDerma:Close() end)
 
 hook.Add("cfc_di_crashTick", "cfc_di_interfaceUpdate", function(isCrashing, _timeDown, _apiState)
 	timeDown = _timeDown or 0
