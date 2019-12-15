@@ -16,7 +16,7 @@ net.Receive("cfc_di_loaded", function(len, ply)
 end)
 
 hook.Add("PlayerDisconnected", "crashsys", function(ply)
-	ping(ply)
+	ping(ply) -- Stop menu popping up while they are leaving
 	table.RemoveByValue(players, ply)
 end)
 

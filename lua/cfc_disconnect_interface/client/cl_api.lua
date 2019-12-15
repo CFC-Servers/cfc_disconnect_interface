@@ -1,5 +1,7 @@
 crashApi = {}
 
+local http = http
+
 local cfc_endpoint = "https://scripting.cfcservers.org/cfc3-ping"
 local global_endpoint = "https://www.google.com"
 
@@ -21,6 +23,7 @@ local function getState()
 	return state
 end
 
+-- Check both websites responded, set state accordingly
 local function handleResponses()
 	if pingCancelled then -- Ignore responses if ping was cancelled
 		return
@@ -40,6 +43,7 @@ local function handleResponses()
 	end
 end
 
+-- Fetch cfc and global end points
 local function triggerPing()
 	pingCancelled = false
 	state = api.PINGING_API
@@ -48,6 +52,7 @@ local function triggerPing()
 	http.Fetch(cfc_endpoint, 
 		function(body, size, headers, code)
 			local data = util.JSONToTable( body )
+			-- If response is malformed, or empty, set cfc false
 			if not data or data["server-is-up"] == nil then -- Can't use dot notation cuz api field has dashes >:(
 				responses.cfc = false
 				handleResponses()
@@ -57,6 +62,7 @@ local function triggerPing()
 			end
 		end, 
 		function(err)
+			-- If cfc doesn't respond, set cfc false, might want to do something special here, as this means cfcservers had a heart attack
 			responses.cfc = false
 			handleResponses()
 		end
