@@ -26,8 +26,9 @@ surface.CreateFont( "CFC_Button",
     }
 )
 
+-- local GAME_CODE
 local GAME_URL = "https://cdn.cfcservers.org/media/dinosaur/index.html"
--- local GAME_URL = "http://local:8080/"
+-- local GAME_URL = "http://local:8000/"
 -- Width of the game on the website in pixels, needed as I didn't write the dinosaur game, and it doesn't like centering nicely
 local GAME_WIDTH = 1256
 
@@ -85,6 +86,18 @@ local function leave()
 		RunConsoleCommand( "disconnect" ) 
 	end)
 end
+
+local init
+
+init = function()
+	http.Fetch(GAME_URL, function(body) 
+		GAME_CODE = body 
+	end, function() 
+		timer.Simple(5, init)
+	end)
+end
+
+hook.Add("Initialize", "cfc_di_init", init)
 
 -- Creates and populates a title bar for the frame
 local function addTitleBar(frame)
@@ -364,7 +377,7 @@ local function populateBody(body)
 	local gameHtml = vgui.Create( "DHTML", gamePanel )
 	gameHtml:SetSize( gamePanel:GetSize() )
 	gameHtml:SetPos( (gamePanel:GetWide() - GAME_WIDTH) / 2, 0 )
-	gameHtml:OpenURL( GAME_URL )
+	gameHtml:SetHTML( GAME_CODE or "Oops, it didn't load lol" )
 	function gameHtml:Think()
 		if not gameHtml:HasFocus() then gameHtml:RequestFocus() end
 	end
@@ -424,7 +437,7 @@ local function createInterface()
 	end
 end
 
-concommand.Add("cfc_interface", createInterface)
+-- concommand.Add("cfc_interface", createInterface)
 
 hook.Add("cfc_di_crashTick", "cfc_di_interfaceUpdate", function(isCrashing, _timeDown, _apiState)
 	timeDown = _timeDown or 0
@@ -438,7 +451,7 @@ hook.Add("cfc_di_crashTick", "cfc_di_interfaceUpdate", function(isCrashing, _tim
 	if not isCrashing then
 		previouslyShown = false
 		if interfaceDerma then 
-			--interfaceDerma:Close() 
+			interfaceDerma:Close() 
 		end
 	end
 end)
