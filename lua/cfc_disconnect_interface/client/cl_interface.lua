@@ -18,6 +18,14 @@ surface.CreateFont( "CFC_Special",
     }
 )
 
+surface.CreateFont( "CFC_Mono",
+    {
+        font = "Lucida Console",
+        size = 30,
+        weight = 1500
+    }
+)
+
 surface.CreateFont( "CFC_Button",
     {
         font = "arial",
@@ -237,6 +245,16 @@ local function hideMessage( msg )
     end
 end
 
+local function getDisconnectMessage()
+	if apiState == crashApi.SERVER_DOWN then
+		return "Are you sure? Hang in there, the server will restart soon..."
+	elseif apiState == crashApi.SERVER_UP then
+		return "Are you sure? The server is already back up and ready!"
+	elseif apiState == crashApi.NO_INTERNET then
+		return "Are you sure? If your internet comes back, you can easily rejoin from this page."
+	end
+end
+
 -- Create bar panel and add buttons
 local function addButtonsBar( frame )
     local frameW, frameH = frame:GetSize()
@@ -248,12 +266,23 @@ local function addButtonsBar( frame )
     barPanel:SetSize( frameW, buttonBarHeight )
     barPanel:SetPos( 0, frameH - buttonBarHeight - buttonBarOffset )
     barPanel.Paint = nil
+    function barPanel:Think()
+    	if self.disconMode and apiState == crashApi.SERVER_UP and not self.backUp then
+    		showMessage( getDisconnectMessage() )
+    		self.backUp = true
+    	end
+    end
 
     -- Put buttons onto the panel as members for easy access
     barPanel.reconBtn = makeButton( barPanel, "RECONNECT", 0.25, function()
+    	barPanel.reconBtn:SetDisabled( true )
+    	barPanel.reconBtn.dontEnable = true
+    	barPanel.disconBtn:SetDisabled( true )
         if not barPanel.disconMode then
+            showMessage( "Reconnecting..." )
             rejoin()
         else
+        	showMessage( "Disconnecting..." )
             leave()
         end
     end )
@@ -262,7 +291,7 @@ local function addButtonsBar( frame )
     barPanel.reconBtn:SetDisabled( true )
     barPanel.disconBtn = makeButton( barPanel, "DISCONNECT", 0.75, function( self )
         if not barPanel.disconMode then
-            showMessage( "Are you sure? Hang in there, the server will restart soon..." )
+            showMessage( getDisconnectMessage() )
             barPanel.disconMode = true
             barPanel.disconPrevDisabled = barPanel.reconBtn:GetDisabled()
             barPanel.reconBtn:SetDisabled( false )
@@ -286,10 +315,10 @@ local function addButtonsBar( frame )
 end
 
 -- Making lines of text for body
-local function makeLabel( frame, text, top, col, xFraction )
+local function makeLabel( frame, text, top, col, xFraction, font )
     col = col or Color( 255, 255, 255 )
     local label = vgui.Create( "DLabel", frame )
-    label:SetFont( "CFC_Special" )
+    label:SetFont( font or "CFC_Special" )
     function label:setTextAndAlign( str )
         self:SetText( str )
         self:SizeToContents()
@@ -319,9 +348,7 @@ local function populateBodyServerDown( body )
     -- Then resize and move
     function curTimePreLabel:Think()
         if apiState == crashApi.SERVER_UP and not self.backUp then
-            self:SetText( "It was down for" )
-            self:SizeToContents()
-            self:CenterHorizontal()
+            self:setTextAndAlign( "It was down for" )
             self.backUp = true
         end
     end
@@ -329,10 +356,10 @@ local function populateBodyServerDown( body )
     -- Text for downTime, update its value in Think
     -- If server comes back up, make it green and stop updating it
     -- If timeDown > averageTimeDown, make it red and show the messageLabel
-    local curTimeLabel = makeLabel( body, secondsAsTime( math.floor( timeDown ) ), 70, Color( 251, 191, 83 ) )
+    local curTimeLabel = makeLabel( body, secondsAsTime( math.floor( timeDown ) ), 70, Color( 251, 191, 83 ), 0.5, "CFC_Mono" )
     function curTimeLabel:Think()
         if apiState ~= crashApi.SERVER_UP then
-            self:SetText( secondsAsTime( math.floor( timeDown ) ) )
+            self:setTextAndAlign( secondsAsTime( math.floor( timeDown ) ) )
             if timeDown > TIME_TO_RESTART then
                 self:SetTextColor( Color( 255, 0, 0 ) )
                 if not messageLabel:IsVisible() then
@@ -426,7 +453,7 @@ local function createInterface()
         if apiState == crashApi.INACTIVE then
             frame:Close() -- Server recovered without ever closing
         elseif apiState == crashApi.SERVER_UP then
-            if btnsPanel.reconBtn:GetDisabled() == true then
+            if btnsPanel.reconBtn:GetDisabled() == true and not barPanel.reconBtn.dontEnable then
                 btnsPanel.reconBtn:SetDisabled( false ) -- Server back up
             end
         end
@@ -437,13 +464,13 @@ local function createInterface()
     end
 end
 
--- concommand.Add( "cfc_interface", createInterface )
-
 hook.Add( "cfc_di_crashTick", "cfc_di_interfaceUpdate", function( isCrashing, _timeDown, _apiState )
     timeDown = _timeDown or 0
-    apiState = _apiState
+    if _apiState ~= crashApi.PINGING_API then
+    	apiState = _apiState
+    end
     -- Open interface if server is crashing, API has responded, interface isn't already open, and interface has not yet been opened
-    if isCrashing and apiState ~= crashApi.PINGING_API and not interfaceDerma and not previouslyShown then
+    if isCrashing and _apiState ~= crashApi.PINGING_API and not interfaceDerma and not previouslyShown then
         createInterface()
         previouslyShown = true
     end

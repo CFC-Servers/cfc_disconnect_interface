@@ -14,6 +14,7 @@ net.Receive( "cfc_di_ping", function()
     if PING_MISS > 0 then -- Allow some pings before actually starting crash systems. ( Avoid bugs on join stutter. )
         PING_MISS = PING_MISS - 1
     else
+        if crashApi.inDebug then return end
         lastPong = RealTime()
     end
 end )

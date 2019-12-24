@@ -1,6 +1,7 @@
 crashApi = {}
 
-local http = http
+-- local references
+local http, concommand = http, concommand
 
 local cfc_endpoint = "https://scripting.cfcservers.org/cfc3-ping"
 local global_endpoint = "https://www.google.com"
@@ -12,6 +13,38 @@ api.PINGING_API = 1
 api.NO_INTERNET = 2
 api.SERVER_DOWN = 3
 api.SERVER_UP = 4
+
+local DEV_MODE = false
+
+api.inDebug = false
+api.debugMode = api.INACTIVE
+
+if DEV_MODE then
+    -- Testing
+    local function testServerCrash()
+        api.inDebug = true
+        api.debugMode = api.SERVER_DOWN
+    end
+    concommand.Add( "cfc_di_testcrash", testServerCrash )
+
+    local function testNoInternet()
+        api.inDebug = true
+        api.debugMode = api.NO_INTERNET
+    end
+    concommand.Add( "cfc_di_testnointernet", testNoInternet )
+
+    local function serverRestarted()
+        api.inDebug = true
+        api.debugMode = api.SERVER_UP
+    end
+    concommand.Add( "cfc_di_testrestart", serverRestarted )
+
+    local function serverRecovered()
+        api.inDebug = false
+    end
+    concommand.Add( "cfc_di_testrecover", serverRecovered )
+end
+
 
 local responses = {cfc = nil, global = nil} -- Does nothing but helps with clarity
 
@@ -31,6 +64,10 @@ local function handleResponses()
     if responses.cfc == nil or responses.global == nil then -- Not all responses arrived yet
         return
     end
+
+    -- If in debug mode, set state to debug state
+    if api.inDebug then state = api.debugMode return end
+
     if responses.cfc then
         -- Server is up
         state = api.SERVER_UP
