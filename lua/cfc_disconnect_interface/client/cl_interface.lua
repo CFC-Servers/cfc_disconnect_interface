@@ -453,7 +453,7 @@ local function createInterface()
         if apiState == crashApi.INACTIVE then
             frame:Close() -- Server recovered without ever closing
         elseif apiState == crashApi.SERVER_UP then
-            if btnsPanel.reconBtn:GetDisabled() == true and not barPanel.reconBtn.dontEnable then
+            if btnsPanel.reconBtn:GetDisabled() == true and not btnsPanel.reconBtn.dontEnable then
                 btnsPanel.reconBtn:SetDisabled( false ) -- Server back up
             end
         end
