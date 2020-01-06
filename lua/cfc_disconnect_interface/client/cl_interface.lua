@@ -109,7 +109,7 @@ hook.Add( "Initialize", "cfc_di_init", init )
 
 -- Creates and populates a title bar for the frame
 local function addTitleBar( frame )
-    local frameW, frameH = frame:GetSize()
+    local frameW = frame:GetWide()
     local titleBarHeight = 70
 
     -- The bar itself
@@ -126,8 +126,7 @@ local function addTitleBar( frame )
     local closeBtnPadding = ( titleBarHeight - closeBtnSize ) / 2
     local closeBtn = vgui.Create( "DImageButton", titleBar )
     closeBtn:SetSize( closeBtnSize, closeBtnSize )
-    -- TODO: is this the correct usgae of frameH?
-    closeBtn:SetPos( frameW - closeBtnSize - closeBtnPadding, frameH - closeBtnPadding )
+    closeBtn:SetPos( frameW - closeBtnSize - closeBtnPadding, closeBtnPadding )
     closeBtn:SetImage( "icons/cross.png" )
     function closeBtn:DoClick()
         frame:Close()
@@ -347,8 +346,10 @@ local function populateBodyServerDown( body )
 
     local restartTimeStr = "The server normally takes about " .. secondsAsTime( TIME_TO_RESTART ) .. " to restart."
 
+    -- Restart time label
     makeLabel( body, restartTimeStr, 0 )
-    makeLabel( body, "It has been down for", 32 )
+
+    local curTimePreLabel = makeLabel( body, "It has been down for", 32 )
 
     -- When the server comes back up, "It has been down for" => "It was down for"
     -- Then resize and move
