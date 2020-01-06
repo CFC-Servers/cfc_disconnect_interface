@@ -126,7 +126,8 @@ local function addTitleBar( frame )
     local closeBtnPadding = ( titleBarHeight - closeBtnSize ) / 2
     local closeBtn = vgui.Create( "DImageButton", titleBar )
     closeBtn:SetSize( closeBtnSize, closeBtnSize )
-    closeBtn:SetPos( frameW - closeBtnSize - closeBtnPadding, closeBtnPadding )
+    -- TODO: is this the correct usgae of frameH?
+    closeBtn:SetPos( frameW - closeBtnSize - closeBtnPadding, frameH - closeBtnPadding )
     closeBtn:SetImage( "icons/cross.png" )
     function closeBtn:DoClick()
         frame:Close()
@@ -210,11 +211,12 @@ local function makeButton( frame, text, xFraction, doClick, outlineCol, fillCol,
         end
 
         self:SetTextColor( lineCol )
-        draw.RoundedBox( h/2, 0, 0, w, h, lineCol )
+
+        local boxH = h / 2
+        draw.RoundedBox( boxH, 0, 0, w, h, lineCol )
 
         local nw, nh = w - ( borderWeight * 2 ), h - ( borderWeight * 2 )
-        draw.RoundedBox( nh/2, borderWeight, borderWeight, nw, nh, bgCol )
-
+        draw.RoundedBox( nh / 2, borderWeight, borderWeight, nw, nh, bgCol )
     end
 
     return btn
@@ -332,18 +334,22 @@ end
 
 -- Text for internet down on body
 local function populateBodyInternetDown( body )
-    local label1 = makeLabel( body, "Please check you're still connected to the internet.", 20 )
-    local label2 = makeLabel( body, "In the meantime, ", 80 )
+    makeLabel( body, "Please check you're still connected to the internet.", 20 )
+    makeLabel( body, "In the meantime, ", 80 )
+
     return "Oops, looks like you disconnected"
 end
 
 -- Text for server down on body
 local function populateBodyServerDown( body )
-
+    -- TODO: do these need to be used?
     local frameW, frameH = body:GetSize()
+
     local restartTimeStr = "The server normally takes about " .. secondsAsTime( TIME_TO_RESTART ) .. " to restart."
-    local restartTimeLabel = makeLabel( body, restartTimeStr, 0 )
-    local curTimePreLabel = makeLabel( body, "It has been down for", 32 )
+
+    makeLabel( body, restartTimeStr, 0 )
+    makeLabel( body, "It has been down for", 32 )
+
     -- When the server comes back up, "It has been down for" => "It was down for"
     -- Then resize and move
     function curTimePreLabel:Think()
