@@ -343,7 +343,7 @@ end
 -- Text for server down on body
 local function populateBodyServerDown( body )
     -- TODO: do these need to be used?
-    local frameW, frameH = body:GetSize()
+    -- local frameW, frameH = body:GetSize()
 
     local restartTimeStr = "The server normally takes about " .. secondsAsTime( TIME_TO_RESTART ) .. " to restart."
 
@@ -398,7 +398,7 @@ local function populateBody( body )
         title = populateBodyServerDown( body )
     end
 
-    local playGameLabel = makeLabel( body, "Why not play a game while you wait? ( Press space )", 108 )
+    makeLabel( body, "Why not play a game while you wait? ( Press space )", 108 )
 
     -- Game wrapper, in case we ever want to make a game that runs in lua
     local gamePanel = vgui.Create( "DPanel", body )
