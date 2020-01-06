@@ -246,13 +246,13 @@ local function hideMessage( msg )
 end
 
 local function getDisconnectMessage()
-	if apiState == crashApi.SERVER_DOWN then
-		return "Are you sure? Hang in there, the server will restart soon..."
-	elseif apiState == crashApi.SERVER_UP then
-		return "Are you sure? The server is already back up and ready!"
-	elseif apiState == crashApi.NO_INTERNET then
-		return "Are you sure? If your internet comes back, you can easily rejoin from this page."
-	end
+    if apiState == crashApi.SERVER_DOWN then
+        return "Are you sure? Hang in there, the server will restart soon..."
+    elseif apiState == crashApi.SERVER_UP then
+        return "Are you sure? The server is already back up and ready!"
+    elseif apiState == crashApi.NO_INTERNET then
+        return "Are you sure? If your internet comes back, you can easily rejoin from this page."
+    end
 end
 
 -- Create bar panel and add buttons
@@ -267,22 +267,22 @@ local function addButtonsBar( frame )
     barPanel:SetPos( 0, frameH - buttonBarHeight - buttonBarOffset )
     barPanel.Paint = nil
     function barPanel:Think()
-    	if self.disconMode and apiState == crashApi.SERVER_UP and not self.backUp then
-    		showMessage( getDisconnectMessage() )
-    		self.backUp = true
-    	end
+        if self.disconMode and apiState == crashApi.SERVER_UP and not self.backUp then
+            showMessage( getDisconnectMessage() )
+            self.backUp = true
+        end
     end
 
     -- Put buttons onto the panel as members for easy access
     barPanel.reconBtn = makeButton( barPanel, "RECONNECT", 0.25, function()
-    	barPanel.reconBtn:SetDisabled( true )
-    	barPanel.reconBtn.dontEnable = true
-    	barPanel.disconBtn:SetDisabled( true )
+        barPanel.reconBtn:SetDisabled( true )
+        barPanel.reconBtn.dontEnable = true
+        barPanel.disconBtn:SetDisabled( true )
         if not barPanel.disconMode then
             showMessage( "Reconnecting..." )
             rejoin()
         else
-        	showMessage( "Disconnecting..." )
+            showMessage( "Disconnecting..." )
             leave()
         end
     end )
@@ -467,7 +467,7 @@ end
 hook.Add( "cfc_di_crashTick", "cfc_di_interfaceUpdate", function( isCrashing, _timeDown, _apiState )
     timeDown = _timeDown or 0
     if _apiState ~= crashApi.PINGING_API then
-    	apiState = _apiState
+        apiState = _apiState
     end
     -- Open interface if server is crashing, API has responded, interface isn't already open, and interface has not yet been opened
     if isCrashing and _apiState ~= crashApi.PINGING_API and not interfaceDerma and not previouslyShown then
