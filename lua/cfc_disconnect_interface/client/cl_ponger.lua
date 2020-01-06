@@ -7,7 +7,7 @@ local PING_MISS = 2 -- How many pings can we miss on join?
 
 local API_TIMEOUT = 5 -- How often to call the api
 
-local lastPing
+local lastPong
 local lastApiCall
 
 net.Receive( "cfc_di_ping", function()
