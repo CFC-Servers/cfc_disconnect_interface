@@ -25,7 +25,7 @@ local function shutdown()
 end
 
 net.Receive( "cfc_di_shutdown", shutdown )
-hook.Add( "ShutDown", "crashsys", shutdown )
+hook.Add( "ShutDown", "cfc_di_shutdown", shutdown )
 
 local function crashTick( timedown )
     local apiState = crashApi.getState();
