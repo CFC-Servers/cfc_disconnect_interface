@@ -52,7 +52,7 @@ disconnectMessages[crashApi.SERVER_UP] = "Are you sure? The server is already ba
 disconnectMessages[crashApi.NO_INTERNET] = "Are you sure? If your internet comes back, you can easily rejoin from this page."
 
 -- Helper function
-function getFrom( i, ... )
+local function getFrom( i, ... )
     return ( {...} )[i]
 end
 
