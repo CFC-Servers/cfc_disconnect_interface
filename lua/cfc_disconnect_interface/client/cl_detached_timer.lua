@@ -4,14 +4,14 @@ dTimer.timers = {}
 dTimer.idCounter = 0
 
 function dTimer.Create( id, delay, reps, f )
-    dTimer.timers[id] = {id = id, delay = delay, reps = reps, f = f, lastCall = SysTime()}
+    dTimer.timers[id] = {id = id, delay = delay, reps = reps, func = f, lastCall = SysTime()}
 end
 
 function dTimer.Adjust( id, delay, reps, f )
     if dTimer.timers[id] then
         dTimer.timers[id].delay = delay or dTimer.timers[id].delay
         dTimer.timers[id].reps = reps or dTimer.timers[id].reps
-        dTimer.timers[id].f = f or dTimer.timers[id].f
+        dTimer.timers[id].func = f or dTimer.timers[id].f
         return true
     end
     return false
@@ -34,19 +34,25 @@ function dTimer.Simple( delay, f )
     dTimer.idCounter = dTimer.idCounter + 1
 end
 
-
 hook.Add( "Think", "cfc_di_detatched_timer", function()
-    local s = SysTime()
-    for k, t in pairs( dTimer.timers ) do
-        if s - t.lastCall > t.delay then
-            t.lastCall = s
-            if t.reps > 0 then
-                t.reps = t.reps - 1
-                if t.reps == 0 then
-                    dTimer.timers[k] = nil
+    local time = SysTime()
+    for id, curTimer in pairs( dTimer.timers ) do
+
+        local delayPassed = time - curTimer.lastCall > curTimer.delay
+
+        if delayPassed then
+            curTimer.lastCall = time
+
+            local hasReps = curTimer.reps > 0
+
+            if hasReps then
+                curTimer.reps = curTimer.reps - 1
+                if curTimer.reps == 0 then
+                    dTimer.Remove( id )
                 end
             end
-            t.f()
+
+            curTimer.func()
         end
     end
 end )

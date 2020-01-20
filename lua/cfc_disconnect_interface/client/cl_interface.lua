@@ -46,6 +46,10 @@ local TIME_TO_RESTART = 180
 local timeDown = 0
 local apiState
 local previouslyShown = false
+local disconnectMessages = {}
+disconnectMessages[crashApi.SERVER_DOWN] = "Are you sure? Hang in there, the server will restart soon..."
+disconnectMessages[crashApi.SERVER_UP] = "Are you sure? The server is already back up and ready!"
+disconnectMessages[crashApi.NO_INTERNET] = "Are you sure? If your internet comes back, you can easily rejoin from this page."
 
 -- Helper function
 function getFrom( i, ... )
@@ -222,38 +226,34 @@ local function makeButton( frame, text, xFraction, doClick, outlineCol, fillCol,
 end
 
 local function showMessage( msg )
-    if interfaceDerma and ( interfaceDerma.messageLabel:GetText() ~= msg or not interfaceDerma.messageLabel:IsVisible() ) then
-        if interfaceDerma.messageLabel:IsVisible() then
-            interfaceDerma.messageLabel:AlphaTo( 0, 0.25 )
-            dTimer.Simple( 0.25, function()
-                interfaceDerma.messageLabel:setTextAndAlign( msg )
-                interfaceDerma.messageLabel:AlphaTo( 255, 0.25 )
-            end )
-        else
+    if not interfaceDerma then return end
+    if interfaceDerma.messageLabel:GetText() == msg and interfaceDerma.messageLabel:IsVisible() then return end
+
+    if interfaceDerma.messageLabel:IsVisible() then
+        interfaceDerma.messageLabel:AlphaTo( 0, 0.25 )
+        dTimer.Simple( 0.25, function()
             interfaceDerma.messageLabel:setTextAndAlign( msg )
-            interfaceDerma.messageLabel:Show()
-            interfaceDerma.messageLabel:AlphaTo( 255, 0.5 )
-        end
+            interfaceDerma.messageLabel:AlphaTo( 255, 0.25 )
+        end )
+    else
+        interfaceDerma.messageLabel:setTextAndAlign( msg )
+        interfaceDerma.messageLabel:Show()
+        interfaceDerma.messageLabel:AlphaTo( 255, 0.5 )
     end
 end
 
 local function hideMessage()
-    if interfaceDerma and interfaceDerma.messageLabel:IsVisible() then
-        interfaceDerma.messageLabel:AlphaTo( 0, 0.25 )
-        dTimer.Simple( 0.25, function()
-            interfaceDerma.messageLabel:Hide()
-        end )
-    end
+    if not interfaceDerma then return end
+    if not interfaceDerma.messageLabel:IsVisible() then return end
+
+    interfaceDerma.messageLabel:AlphaTo( 0, 0.25 )
+    dTimer.Simple( 0.25, function()
+        interfaceDerma.messageLabel:Hide()
+    end )
 end
 
 local function getDisconnectMessage()
-    if apiState == crashApi.SERVER_DOWN then
-        return "Are you sure? Hang in there, the server will restart soon..."
-    elseif apiState == crashApi.SERVER_UP then
-        return "Are you sure? The server is already back up and ready!"
-    elseif apiState == crashApi.NO_INTERNET then
-        return "Are you sure? If your internet comes back, you can easily rejoin from this page."
-    end
+    return disconnectMessages[apiState]
 end
 
 -- Create bar panel and add buttons
@@ -268,10 +268,12 @@ local function addButtonsBar( frame )
     barPanel:SetPos( 0, frameH - buttonBarHeight - buttonBarOffset )
     barPanel.Paint = nil
     function barPanel:Think()
-        if self.disconMode and apiState == crashApi.SERVER_UP and not self.backUp then
-            showMessage( getDisconnectMessage() )
-            self.backUp = true
-        end
+        if not self.disconMode then return end
+        if apiState ~= crashApi.SERVER_UP then return end
+        if self.backUp then return end
+
+        showMessage( getDisconnectMessage() )
+        self.backUp = true
     end
 
     -- Put buttons onto the panel as members for easy access
@@ -341,9 +343,6 @@ end
 
 -- Text for server down on body
 local function populateBodyServerDown( body )
-    -- TODO: do these need to be used?
-    -- local frameW, frameH = body:GetSize()
-
     local restartTimeStr = "The server normally takes about " .. secondsAsTime( TIME_TO_RESTART ) .. " to restart."
 
     -- Restart time label
