@@ -1,6 +1,6 @@
 include( "cfc_disconnect_interface/client/cl_api.lua" )
 
-local vgui, timer, hook = vgui, timer, hook
+local vgui, hook = vgui, hook
 
 surface.CreateFont( "CFC_Normal",
     {
@@ -101,7 +101,7 @@ init = function()
     http.Fetch( GAME_URL, function( body )
         GAME_CODE = body
     end, function()
-        timer.Simple( 5, init )
+        dTimer.Simple( 5, init )
     end )
 end
 
@@ -225,7 +225,7 @@ local function showMessage( msg )
     if interfaceDerma and ( interfaceDerma.messageLabel:GetText() ~= msg or not interfaceDerma.messageLabel:IsVisible() ) then
         if interfaceDerma.messageLabel:IsVisible() then
             interfaceDerma.messageLabel:AlphaTo( 0, 0.25 )
-            timer.Simple( 0.25, function()
+            dTimer.Simple( 0.25, function()
                 interfaceDerma.messageLabel:setTextAndAlign( msg )
                 interfaceDerma.messageLabel:AlphaTo( 255, 0.25 )
             end )
@@ -237,10 +237,10 @@ local function showMessage( msg )
     end
 end
 
-local function hideMessage( msg )
+local function hideMessage()
     if interfaceDerma and interfaceDerma.messageLabel:IsVisible() then
         interfaceDerma.messageLabel:AlphaTo( 0, 0.25 )
-        timer.Simple( 0.25, function()
+        dTimer.Simple( 0.25, function()
             interfaceDerma.messageLabel:Hide()
         end )
     end
@@ -369,7 +369,7 @@ local function populateBodyServerDown( body )
             self:setTextAndAlign( secondsAsTime( math.floor( timeDown ) ) )
             if timeDown > TIME_TO_RESTART then
                 self:SetTextColor( Color( 255, 0, 0 ) )
-                if not messageLabel:IsVisible() then
+                if not interfaceDerma.messageLabel:IsVisible() then
                     showMessage( "Uh oh, seems it's taking a little longer than usual..." )
                 end
             end
