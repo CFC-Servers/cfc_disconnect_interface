@@ -1,6 +1,6 @@
 include( "cfc_disconnect_interface/client/cl_api.lua" )
 
-local net, hook, timer = net, hook, timer
+local net, hook = net, hook
 
 local GRACE_TIME = 3.5 -- How many seconds of lag should we have before showing the panel?
 local PING_MISS = 2 -- How many pings can we miss on join?
@@ -15,12 +15,12 @@ net.Receive( "cfc_di_ping", function()
         PING_MISS = PING_MISS - 1
     else
         if crashApi.inDebug then return end
-        lastPong = RealTime()
+        lastPong = CurTime()
     end
 end )
 
 local function shutdown()
-    timer.Remove( "cfc_di_startup" )
+    dTimer.Remove( "cfc_di_startup" )
     hook.Remove( "Tick", "cfc_di_tick" )
 end
 
@@ -30,9 +30,9 @@ hook.Add( "ShutDown", "crashsys", shutdown )
 local function crashTick( timedown )
     local apiState = crashApi.getState();
     if ( apiState == crashApi.INACTIVE ) or -- No ping sent
-       ( apiState ~= crashApi.SERVER_UP and RealTime() - lastApiCall > API_TIMEOUT ) then -- Previous ping failed, and API_TIMEOUT has passed
-        crashApi.triggerPing();
-        lastApiCall = RealTime();
+       ( CurTime() - lastApiCall > API_TIMEOUT ) then -- API_TIMEOUT has passed
+        crashApi.triggerPing()
+        lastApiCall = CurTime()
 
         apiState = crashApi.getState();
     end
@@ -43,7 +43,7 @@ local function checkCrashTick()
     if not lastPong then return end
     if not LocalPlayer():IsValid() then return end -- disconnected or connecting
 
-    local timeout = RealTime() - lastPong
+    local timeout = CurTime() - lastPong
 
     if timeout > GRACE_TIME then
         crashTick( timeout )
@@ -57,12 +57,12 @@ local function checkCrashTick()
 end
 
 -- Ping the server when the client is ready.
-timer.Create( "cfc_di_startup", 0.01, 0, function()
+dTimer.Create( "cfc_di_startup", 0.01, 0, function()
     local ply = LocalPlayer()
     if ply:IsValid() then
         net.Start( "cfc_di_loaded" )
         net.SendToServer()
-        timer.Remove( "cfc_di_startup" )
+        dTimer.Remove( "cfc_di_startup" )
         print( "cfc_disconnect_interface loaded." )
         hook.Add( "Tick", "cfc_di_tick", checkCrashTick )
     end
