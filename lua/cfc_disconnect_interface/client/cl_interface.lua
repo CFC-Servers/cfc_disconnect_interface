@@ -179,14 +179,14 @@ local function makeButton( frame, text, xFraction, doClick, outlineCol, fillCol,
 
     -- Fade animation state and time for consistant animation speed on different FPS
     btn.fadeState = 0
-    btn.prevTime = CurTime()
+    btn.prevTime = SysTime()
 
     local btnAnimSpeed = 0.1 * 60
 
     function btn:Think()
         -- Make anim same speed for all framerates
-        local dt = CurTime() - self.prevTime
-        self.prevTime = CurTime()
+        local dt = SysTime() - self.prevTime
+        self.prevTime = SysTime()
         if dt > 1 then dt = 0 end -- This happens on first Think after being Shown, dt ends up being very large
 
         if self:IsHovered() and self.fadeState < 1 then
