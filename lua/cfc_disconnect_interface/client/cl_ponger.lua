@@ -15,7 +15,7 @@ net.Receive( "cfc_di_ping", function()
         PING_MISS = PING_MISS - 1
     else
         if crashApi.inDebug then return end
-        lastPong = CurTime()
+        lastPong = SysTime()
     end
 end )
 
@@ -30,9 +30,9 @@ hook.Add( "ShutDown", "crashsys", shutdown )
 local function crashTick( timedown )
     local apiState = crashApi.getState();
     if ( apiState == crashApi.INACTIVE ) or -- No ping sent
-       ( CurTime() - lastApiCall > API_TIMEOUT ) then -- API_TIMEOUT has passed
+       ( SysTime() - lastApiCall > API_TIMEOUT ) then -- API_TIMEOUT has passed
         crashApi.triggerPing()
-        lastApiCall = CurTime()
+        lastApiCall = SysTime()
 
         apiState = crashApi.getState();
     end
@@ -43,7 +43,7 @@ local function checkCrashTick()
     if not lastPong then return end
     if not LocalPlayer():IsValid() then return end -- disconnected or connecting
 
-    local timeout = CurTime() - lastPong
+    local timeout = SysTime() - lastPong
 
     if timeout > GRACE_TIME then
         crashTick( timeout )
