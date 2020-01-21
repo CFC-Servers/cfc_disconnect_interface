@@ -1,4 +1,4 @@
-local PING_TIME = 3
+local PING_TIME = 1
 
 local players = {}
 local table = table
