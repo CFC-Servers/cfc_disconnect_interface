@@ -475,13 +475,16 @@ hook.Add( "cfc_di_crashTick", "cfc_di_interfaceUpdate", function( isCrashing, _t
     if _apiState ~= crashApi.PINGING_API then
         apiState = _apiState
     end
-    -- Open interface if server is crashing, API has responded, interface isn't already open, and interface has not yet been opened
-    if isCrashing and _apiState ~= crashApi.PINGING_API and not interfaceDerma and not previouslyShown then
+
+
+    if isCrashing then
+        -- Open interface if server is crashing, API has responded, interface isn't already open, and interface has not yet been opened
+        if _apiState == crashApi.PINGING_API or _apiState == crashApi.SERVER_UP then return end
+        if interfaceDerma or previouslyShown then return end
         createInterface()
         previouslyShown = true
-    end
-    -- Close menu if server stops crashing
-    if not isCrashing then
+    else
+        -- Close menu if server stops crashing
         previouslyShown = false
         if interfaceDerma then
             interfaceDerma:Close()
