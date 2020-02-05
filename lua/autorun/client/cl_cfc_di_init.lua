@@ -1,4 +1,4 @@
-local minTimeout = CreateConVar("sv_mintimeout", 900, FCVAR_REPLICATED+FCVAR_ARCHIVE+FCVAR_PROTECTED):GetInt()
+local minTimeout = CreateConVar( "sv_mintimeout", 900, FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_PROTECTED ):GetInt()
 local timeout = GetConVar( "cl_timeout" )
 if not timeout or timeout:GetInt() < minTimeout then
     RunConsoleCommand( "cl_timeout", minTimeout )
