@@ -1,6 +1,6 @@
 # cfc_disconnect_interface
 Custom interface to display when the server crashes or the client loses connection  
-You get to play the dinosaur game from Google Chrome!
+You get to play the Dinosaur Game from Google Chrome!
 
 ## Debugging
 - First set `DEV_MODE` in `lua/cfc_disconnect_interface/client/cl_api.lua` to `true`
