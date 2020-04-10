@@ -298,7 +298,7 @@ local function addButtonsBar( frame )
     end )
         -- Color( 74, 251, 191 ), nil, Color( 74, 251, 191 ), Color( 64, 141, 131 ) )
     -- Reconnect button will usually start as disabled
-    barPanel.reconBtn:SetDisabled( false )
+    barPanel.reconBtn:SetDisabled( true )
     barPanel.disconBtn = makeButton( barPanel, "DISCONNECT", 0.75, function( self )
         if not barPanel.disconMode then
             showMessage( getDisconnectMessage() )
