@@ -14,7 +14,7 @@ api.NO_INTERNET = 2
 api.SERVER_DOWN = 3
 api.SERVER_UP = 4
 
-local DEV_MODE = true
+local DEV_MODE = false
 
 api.inDebug = false
 api.debugMode = api.INACTIVE
