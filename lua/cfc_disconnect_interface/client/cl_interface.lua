@@ -268,7 +268,7 @@ local function addButtonsBar( frame )
     barPanel:SetSize( frameW, buttonBarHeight )
     barPanel:SetPos( 0, frameH - buttonBarHeight - buttonBarOffset )
     barPanel.Paint = nil
-    function barPanel:Think()   
+    function barPanel:Think()
         if not self.showOnce then
             showMessage( "You'll have the option to respawn your props when you rejoin." )
             self.showOnce = true
@@ -313,7 +313,7 @@ local function addButtonsBar( frame )
         else
             hideMessage()
 
-            timer.Simple( 0.25, function() 
+            timer.Simple( 0.25, function()
                 showMessage( "You'll have the option to respawn your props when you rejoin." )
             end )
 
