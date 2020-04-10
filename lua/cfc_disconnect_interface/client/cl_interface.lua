@@ -263,11 +263,17 @@ local function addButtonsBar( frame )
     local buttonBarHeight = 90
     local buttonBarOffset = 90
 
+
     local barPanel = vgui.Create( "DPanel", frame )
     barPanel:SetSize( frameW, buttonBarHeight )
     barPanel:SetPos( 0, frameH - buttonBarHeight - buttonBarOffset )
     barPanel.Paint = nil
-    function barPanel:Think()
+    function barPanel:Think()   
+        if not self.showOnce then
+            showMessage( "You'll have the option to respawn your props when you rejoin." )
+            self.showOnce = true
+        end
+
         if not self.disconMode then return end
         if apiState ~= crashApi.SERVER_UP then return end
         if self.backUp then return end
@@ -281,6 +287,7 @@ local function addButtonsBar( frame )
         barPanel.reconBtn:SetDisabled( true )
         barPanel.reconBtn.dontEnable = true
         barPanel.disconBtn:SetDisabled( true )
+
         if not barPanel.disconMode then
             showMessage( "Reconnecting..." )
             rejoin()
@@ -291,7 +298,7 @@ local function addButtonsBar( frame )
     end )
         -- Color( 74, 251, 191 ), nil, Color( 74, 251, 191 ), Color( 64, 141, 131 ) )
     -- Reconnect button will usually start as disabled
-    barPanel.reconBtn:SetDisabled( true )
+    barPanel.reconBtn:SetDisabled( false )
     barPanel.disconBtn = makeButton( barPanel, "DISCONNECT", 0.75, function( self )
         if not barPanel.disconMode then
             showMessage( getDisconnectMessage() )
@@ -305,6 +312,11 @@ local function addButtonsBar( frame )
             barPanel.reconBtn:SetText( "YES" )
         else
             hideMessage()
+
+            timer.Simple( 0.25, function() 
+                showMessage( "You'll have the option to respawn your props when you rejoin." )
+            end )
+
             barPanel.disconMode = false
             self:SetText( "DISCONNECT" )
             self.hoverOutlineCol = Color( 255, 255, 255 )
