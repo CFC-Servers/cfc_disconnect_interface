@@ -3,7 +3,7 @@ crashApi = {}
 -- local references
 local http, concommand = http, concommand
 
-local cfc_endpoint = "https://scripting.cfcservers.org/cfc3-ping"
+local cfc_endpoint = "https://nanny.cfcservers.org/cfc3-ping"
 local global_endpoint = "https://www.google.com"
 
 local api = crashApi
