@@ -10,7 +10,7 @@ local API_TIMEOUT = 5 -- How often to call the api
 local lastPong
 local lastApiCall
 
-net.Receive( "cfc_di_ping", function()
+net.Receive( "CFC_DisconnectInterface_Ping", function()
     if PING_MISS > 0 then -- Allow some pings before actually starting crash systems. ( Avoid bugs on join stutter. )
         PING_MISS = PING_MISS - 1
     else
@@ -20,15 +20,16 @@ net.Receive( "cfc_di_ping", function()
 end )
 
 local function shutdown()
-    dTimer.Remove( "cfc_di_startup" )
-    hook.Remove( "Tick", "cfc_di_tick" )
+    dTimer.Remove( "CFC_DisconnectInterface_Startup" )
+    hook.Remove( "Tick", "CFC_DisconnectInterface_Tick" )
 end
 
-net.Receive( "cfc_di_shutdown", shutdown )
-hook.Add( "ShutDown", "cfc_di_shutdown", shutdown )
+net.Receive( "CFC_DisconnectInterface_Shutdown", shutdown )
+hook.Add( "ShutDown", "CFC_DisconnectInterface_Shutdown", shutdown )
 
 local function crashTick( timedown )
-    local apiState = crashApi.getState();
+    local apiState = crashApi.getState()
+
     if ( apiState == crashApi.INACTIVE ) or -- No ping sent
        ( SysTime() - lastApiCall > API_TIMEOUT ) then -- API_TIMEOUT has passed
         crashApi.triggerPing()
@@ -36,7 +37,8 @@ local function crashTick( timedown )
 
         apiState = crashApi.getState();
     end
-    hook.Run( "cfc_di_crashTick", true, timedown, apiState );
+
+    hook.Run( "CFC_DisconnectInterface_CrashTick", true, timedown, apiState )
 end
 
 local function checkCrashTick()
@@ -52,18 +54,19 @@ local function checkCrashTick()
         if crashApi.getState() ~= crashApi.INACTIVE then
             crashApi.cancelPing();
         end
-        hook.Run( "cfc_di_crashTick", false );
+
+        hook.Run( "CFC_DisconnectInterface_CrashTick", false );
     end
 end
 
 -- Ping the server when the client is ready.
-dTimer.Create( "cfc_di_startup", 0.01, 0, function()
+dTimer.Create( "CFC_DisconnectInterface_Startup", 0.01, 0, function()
     local ply = LocalPlayer()
     if ply:IsValid() then
-        net.Start( "cfc_di_loaded" )
+        net.Start( "CFC_DisconnectInterface_Loaded" )
         net.SendToServer()
-        dTimer.Remove( "cfc_di_startup" )
-        print( "cfc_disconnect_interface loaded." )
-        hook.Add( "Tick", "cfc_di_tick", checkCrashTick )
+        dTimer.Remove( "CFC_DisconnectInterface_startup" )
+        print( "cfc_disconnect_interface loaded" )
+        hook.Add( "Tick", "CFC_DisconnectInterface_Tick", checkCrashTick )
     end
 end )

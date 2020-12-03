@@ -1,6 +1,7 @@
-util.AddNetworkString( "cfc_di_ping" )
-util.AddNetworkString( "cfc_di_loaded" )
-util.AddNetworkString( "cfc_di_shutdown" )
+util.AddNetworkString( "CFC_DisconnectInterface_Ping" )
+util.AddNetworkString( "CFC_DisconnectInterface_Loaded" )
+util.AddNetworkString( "CFC_DisconnectInterface_Shutdown" )
+util.AddNetworkString( "CFC_DisconnectInterface_GetStatusEndpoint" )
 
 CreateConVar( "sv_mintimeout", 900, FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_PROTECTED )
 

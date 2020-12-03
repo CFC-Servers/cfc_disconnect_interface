@@ -3,8 +3,8 @@ crashApi = {}
 -- local references
 local http, concommand = http, concommand
 
-local cfc_endpoint = "https://scripting.cfcservers.org/cfc3-ping"
-local global_endpoint = "https://www.google.com"
+local serverStatusEndpoint
+local connectivityTestEndpoint = "https://www.google.com"
 
 local api = crashApi
 
@@ -86,7 +86,7 @@ local function triggerPing()
     state = api.PINGING_API
     responses = {cfc = nil, global = nil}
 
-    http.Fetch( cfc_endpoint,
+    http.Fetch( serverStatusEndpoint,
         function( body, size, headers, code )
             local data = util.JSONToTable( body )
             -- If response is malformed, or empty, set cfc false
@@ -105,7 +105,7 @@ local function triggerPing()
         end
     )
 
-    http.Fetch( global_endpoint,
+    http.Fetch( connectivityTestEndpoint,
         function( body, size, headers, code )
             responses.global = true
             handleResponses()
@@ -117,6 +117,13 @@ local function triggerPing()
     )
 
 end
+
+net.Receive( "CFC_DisconnectInterface_GetStatusEndpoint", function( _, ply )
+    if not IsValid( ply ) then return end
+    net.Start( "CFC_DisconnectInterface_GetStatusEndpoint" )
+        net.WriteString( statusEndpoint )
+    net.Send( ply )
+end )
 
 local function cancelPing()
     state = api.INACTIVE

@@ -77,7 +77,7 @@ local delayId = 0
 local function delaycall( time, callback )
     local wait = RealTime() + time
     delayId = delayId + 1
-    local hookName = "cfc_di_delay_" .. delayId
+    local hookName = "CFC_DisconnectInterface_delay_" .. delayId
     hook.Add( "Tick", hookName, function()
         if RealTime() > wait then
             hook.Remove( "Tick", hookName )
@@ -109,7 +109,7 @@ init = function()
     end )
 end
 
-hook.Add( "Initialize", "cfc_di_init", init )
+hook.Add( "Initialize", "CFC_DisconnectInterface_Init", init )
 
 -- Creates and populates a title bar for the frame
 local function addTitleBar( frame )
@@ -482,7 +482,7 @@ local function createInterface()
     end
 end
 
-hook.Add( "cfc_di_crashTick", "cfc_di_interfaceUpdate", function( isCrashing, _timeDown, _apiState )
+hook.Add( "CFC_DisconnectInterface_CrashTick", "CFC_DisconnectInterface_InterfaceUpdate", function( isCrashing, _timeDown, _apiState )
     timeDown = _timeDown or 0
     if _apiState ~= crashApi.PINGING_API then
         apiState = _apiState
