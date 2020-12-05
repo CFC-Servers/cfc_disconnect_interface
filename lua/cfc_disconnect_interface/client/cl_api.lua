@@ -46,7 +46,7 @@ if DEV_MODE then
 end
 
 
-local responses = {cfc = nil, global = nil} -- Does nothing but helps with clarity
+local responses = { cfc = nil, global = nil } -- Does nothing but helps with clarity
 
 local state = api.INACTIVE
 
@@ -84,7 +84,7 @@ end
 local function triggerPing()
     pingCancelled = false
     state = api.PINGING_API
-    responses = {cfc = nil, global = nil}
+    responses = { cfc = nil, global = nil }
 
     http.Fetch( cfc_endpoint,
         function( body, size, headers, code )
