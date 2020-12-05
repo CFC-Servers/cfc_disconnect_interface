@@ -4,7 +4,7 @@ dTimer.timers = {}
 dTimer.idCounter = 0
 
 function dTimer.Create( id, delay, reps, f )
-    dTimer.timers[id] = {id = id, delay = delay, reps = reps, func = f, lastCall = SysTime()}
+    dTimer.timers[id] = { id = id, delay = delay, reps = reps, func = f, lastCall = SysTime() }
 end
 
 function dTimer.Adjust( id, delay, reps, f )

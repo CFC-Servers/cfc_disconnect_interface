@@ -53,7 +53,7 @@ disconnectMessages[crashApi.NO_INTERNET] = "Are you sure? If your internet comes
 
 -- Helper function
 local function getFrom( i, ... )
-    return ( {...} )[i]
+    return ( { ... } )[i]
 end
 
 -- Colors
@@ -503,4 +503,3 @@ hook.Add( "cfc_di_crashTick", "cfc_di_interfaceUpdate", function( isCrashing, _t
         end
     end
 end )
-

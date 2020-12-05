@@ -30,7 +30,7 @@ hook.Add( "ShutDown", "cfc_di_shutdown", shutdown )
 local function crashTick( timedown )
     local apiState = crashApi.getState();
     if ( apiState == crashApi.INACTIVE ) or -- No ping sent
-       ( SysTime() - lastApiCall > API_TIMEOUT ) then -- API_TIMEOUT has passed
+        ( SysTime() - lastApiCall > API_TIMEOUT ) then -- API_TIMEOUT has passed
         crashApi.triggerPing()
         lastApiCall = SysTime()
 
