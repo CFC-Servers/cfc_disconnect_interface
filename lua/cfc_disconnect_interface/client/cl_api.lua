@@ -1,12 +1,14 @@
-crashApi = {}
+require( "cfc_promises" )
 
--- local references
-local http, concommand = http, concommand
+CFCCrashAPI = {}
 
-local cfc_endpoint = "https://nanny.cfcservers.org/cfc3-ping"
-local global_endpoint = "https://www.google.com"
+local endpointDirectory = "cfc/cfc_disconnect_interface/endpoint.txt"
 
-local api = crashApi
+local endpointCFC = file.Read( endpointDirectory ) or "https://nanny.cfcservers.org/cfc3-ping"
+local endpointGlobal = "https://www.google.com"
+
+local api = CFCCrashAPI
+api.state = api.INACTIVE
 
 api.INACTIVE = 0
 api.PINGING_API = 1
@@ -14,116 +16,36 @@ api.NO_INTERNET = 2
 api.SERVER_DOWN = 3
 api.SERVER_UP = 4
 
-local DEV_MODE = false
+function api._checkCFCEndpoint()
+    local success, body = await( NP.http.fetch( endpointCFC ) )
 
-api.inDebug = false
-api.debugMode = api.INACTIVE
+    if not success then return false end
 
-if DEV_MODE then
-    -- Testing
-    local function testServerCrash()
-        api.inDebug = true
-        api.debugMode = api.SERVER_DOWN
-    end
-    concommand.Add( "cfc_di_testcrash", testServerCrash )
-
-    local function testNoInternet()
-        api.inDebug = true
-        api.debugMode = api.NO_INTERNET
-    end
-    concommand.Add( "cfc_di_testnointernet", testNoInternet )
-
-    local function serverRestarted()
-        api.inDebug = true
-        api.debugMode = api.SERVER_UP
-    end
-    concommand.Add( "cfc_di_testrestart", serverRestarted )
-
-    local function serverRecovered()
-        api.inDebug = false
-    end
-    concommand.Add( "cfc_di_testrecover", serverRecovered )
+    local data = util.JSONToTable( body )
+    return tobool( data and data["server-is-up"] )
 end
+api.checkCFCEndpoint = async( api._checkCFCEndpoint )
 
-
-local responses = { cfc = nil, global = nil } -- Does nothing but helps with clarity
-
-local state = api.INACTIVE
-
-local pingCancelled = false
-
-local function getState()
-    return state
+function api._checkGlobalEndpoint()
+    local success = await( NP.http.fetch( endpointGlobal ) )
+    return success
 end
+api.checkGlobalEndpoint = async( api._checkGlobalEndpoint )
 
--- Check both websites responded, set state accordingly
-local function handleResponses()
-    if pingCancelled then -- Ignore responses if ping was cancelled
-        return
-    end
-    if responses.cfc == nil or responses.global == nil then -- Not all responses arrived yet
-        return
-    end
+function api._ping()
+    api.state = api.PINGING_API
 
-    -- If in debug mode, set state to debug state
-    if api.inDebug then state = api.debugMode return end
+    local _, data = await( promises.all( api.checkCFCEndpoint(), api.checkGlobalEndpoint() ) )
+    local cfcStatus, globalStatus = data[1][1], data[2][1]
 
-    if responses.cfc then
-        -- Server is up
-        state = api.SERVER_UP
-    elseif not responses.cfc and responses.global then
-        -- Server is down
-        state = api.SERVER_DOWN
+    if cfcStatus and globalStatus then
+        api.state = api.SERVER_UP
+    elseif globalStatus then
+        api.state = api.SERVER_DOWN
     else
-        -- Internet is down
-        state = api.NO_INTERNET
+        api.state = api.NO_INTERNET
     end
+
+    return api.state
 end
-
--- Fetch cfc and global end points
-local function triggerPing()
-    pingCancelled = false
-    state = api.PINGING_API
-    responses = { cfc = nil, global = nil }
-
-    http.Fetch( cfc_endpoint,
-        function( body, size, headers, code )
-            local data = util.JSONToTable( body )
-            -- If response is malformed, or empty, set cfc false
-            if not data or data.status == nil then -- Can't use dot notation cuz api field has dashes >:(
-                responses.cfc = false
-                handleResponses()
-            else
-                responses.cfc = data.status == "server-is-up"
-                handleResponses()
-            end
-        end,
-        function( err )
-            -- If cfc doesn't respond, set cfc false, might want to do something special here, as this means cfcservers had a heart attack
-            responses.cfc = false
-            handleResponses()
-        end
-    )
-
-    http.Fetch( global_endpoint,
-        function( body, size, headers, code )
-            responses.global = true
-            handleResponses()
-        end,
-        function( err )
-            responses.global = false
-            handleResponses()
-        end
-    )
-
-end
-
-local function cancelPing()
-    state = api.INACTIVE
-    pingCancelled = true
-end
-
-
-api.getState = getState
-api.triggerPing = triggerPing
-api.cancelPing = cancelPing
+api.ping = async( api._ping )

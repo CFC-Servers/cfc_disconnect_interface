@@ -1,7 +1,6 @@
 local PING_TIME = 1
 
 local players = {}
-local table = table
 
 local function ping( ply )
     net.Start( "cfc_di_ping" )
@@ -20,9 +19,7 @@ hook.Add( "PlayerDisconnected", "crashsys", function( ply )
     table.RemoveByValue( players, ply )
 end )
 
-timer.Create( "cfc_di_pingTimer", PING_TIME, 0, function()
-    ping()
-end )
+timer.Create( "cfc_di_pingTimer", PING_TIME, 0, ping )
 
 hook.Add( "ShutDown", "cfc_di", function()
     net.Start( "cfc_di_shutdown" )
