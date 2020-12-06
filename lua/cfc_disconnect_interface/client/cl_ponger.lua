@@ -1,20 +1,19 @@
 include( "cfc_disconnect_interface/client/cl_api.lua" )
 
-local net, hook = net, hook
-
 local GRACE_TIME = 3.5 -- How many seconds of lag should we have before showing the panel?
 local PING_MISS = 2 -- How many pings can we miss on join?
 
 local API_TIMEOUT = 5 -- How often to call the api
 
 local lastPong
-local lastApiCall
+
+local pongerStatus = false
+local pingLoopRunning = false
 
 net.Receive( "cfc_di_ping", function()
     if PING_MISS > 0 then -- Allow some pings before actually starting crash systems. ( Avoid bugs on join stutter. )
         PING_MISS = PING_MISS - 1
     else
-        if crashApi.inDebug then return end
         lastPong = SysTime()
     end
 end )
@@ -27,17 +26,18 @@ end
 net.Receive( "cfc_di_shutdown", shutdown )
 hook.Add( "ShutDown", "cfc_di_shutdown", shutdown )
 
-local function crashTick( timedown )
-    local apiState = crashApi.getState();
-    if ( apiState == crashApi.INACTIVE ) or -- No ping sent
-        ( SysTime() - lastApiCall > API_TIMEOUT ) then -- API_TIMEOUT has passed
-        crashApi.triggerPing()
-        lastApiCall = SysTime()
+local function _pingLoop()
+    if pingLoopRunning then return end
+    pingLoopRunning = true
 
-        apiState = crashApi.getState();
+    while pongerStatus do
+        await( CFCCrashAPI.ping() )
+        await( NP.timeout( API_TIMEOUT ) )
     end
-    hook.Run( "cfc_di_crashTick", true, timedown, apiState );
+
+    pingLoopRunning = false
 end
+pingLoop = async( _pingLoop )
 
 local function checkCrashTick()
     if not lastPong then return end
@@ -45,24 +45,25 @@ local function checkCrashTick()
 
     local timeout = SysTime() - lastPong
 
-    if timeout > GRACE_TIME then
-        crashTick( timeout )
-    else
-        -- Server recovered while crashApi was running, cancel the request
-        if crashApi.getState() ~= crashApi.INACTIVE then
-            crashApi.cancelPing();
-        end
-        hook.Run( "cfc_di_crashTick", false );
+    local inGrace = timeout > GRACE_TIME
+
+    if pongerStatus ~= inGrace then
+        pongerStatus = inGrace
+
+        pingLoop()
     end
+
+    hook.Run( "cfc_di_crashTick", pongerStatus, timedown, CFCCrashAPI.state )
 end
 
 -- Ping the server when the client is ready.
 dTimer.Create( "cfc_di_startup", 0.01, 0, function()
-    local ply = LocalPlayer()
-    if ply:IsValid() then
+    if LocalPlayer():IsValid() then
+        dTimer.Remove( "cfc_di_startup" )
+
         net.Start( "cfc_di_loaded" )
         net.SendToServer()
-        dTimer.Remove( "cfc_di_startup" )
+
         print( "cfc_disconnect_interface loaded." )
         hook.Add( "Tick", "cfc_di_tick", checkCrashTick )
     end

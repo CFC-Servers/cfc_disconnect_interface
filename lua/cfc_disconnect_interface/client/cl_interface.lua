@@ -1,7 +1,5 @@
 include( "cfc_disconnect_interface/client/cl_api.lua" )
 
-local vgui, hook = vgui, hook
-
 surface.CreateFont( "CFC_Normal",
     {
         font = "arial",
@@ -47,9 +45,9 @@ local timeDown = 0
 local apiState
 local previouslyShown = false
 local disconnectMessages = {}
-disconnectMessages[crashApi.SERVER_DOWN] = "Are you sure? Hang in there, the server will restart soon..."
-disconnectMessages[crashApi.SERVER_UP] = "Are you sure? The server is already back up and ready!"
-disconnectMessages[crashApi.NO_INTERNET] = "Are you sure? If your internet comes back, you can easily rejoin from this page."
+disconnectMessages[CFCCrashAPI.SERVER_DOWN] = "Are you sure? Hang in there, the server will restart soon..."
+disconnectMessages[CFCCrashAPI.SERVER_UP] = "Are you sure? The server is already back up and ready!"
+disconnectMessages[CFCCrashAPI.NO_INTERNET] = "Are you sure? If your internet comes back, you can easily rejoin from this page."
 
 -- Helper function
 local function getFrom( i, ... )
@@ -275,7 +273,7 @@ local function addButtonsBar( frame )
         end
 
         if not self.disconMode then return end
-        if apiState ~= crashApi.SERVER_UP then return end
+        if apiState ~= CFCCrashAPI.SERVER_UP then return end
         if self.backUp then return end
 
         showMessage( getDisconnectMessage() )
@@ -365,7 +363,7 @@ local function populateBodyServerDown( body )
     -- When the server comes back up, "It has been down for" => "It was down for"
     -- Then resize and move
     function curTimePreLabel:Think()
-        if apiState == crashApi.SERVER_UP and not self.backUp then
+        if apiState == CFCCrashAPI.SERVER_UP and not self.backUp then
             self:setTextAndAlign( "It was down for" )
             self.backUp = true
         end
@@ -376,7 +374,7 @@ local function populateBodyServerDown( body )
     -- If timeDown > averageTimeDown, make it red and show the messageLabel
     local curTimeLabel = makeLabel( body, secondsAsTime( math.floor( timeDown ) ), 70, Color( 251, 191, 83 ), 0.5, "CFC_Mono" )
     function curTimeLabel:Think()
-        if apiState ~= crashApi.SERVER_UP then
+        if apiState ~= CFCCrashAPI.SERVER_UP then
             self:setTextAndAlign( secondsAsTime( math.floor( timeDown ) ) )
             if timeDown > TIME_TO_RESTART then
                 self:SetTextColor( Color( 255, 0, 0 ) )
@@ -403,8 +401,8 @@ local function populateBody( body )
     interfaceDerma.messageLabel:SetAlpha( 0 )
     interfaceDerma.messageLabel:Hide()
 
-    -- Fill top text based on crashApi state
-    if apiState == crashApi.NO_INTERNET then
+    -- Fill top text based on CFCCrashAPI state
+    if apiState == CFCCrashAPI.NO_INTERNET then
         title = populateBodyInternetDown( body )
     else -- Server down or up via api, and down via net
         title = populateBodyServerDown( body )
@@ -468,9 +466,9 @@ local function createInterface()
     -- If server fully recovers without crashing, close menu
     -- If server reboots, enabled the reconnect button
     function frame:Think()
-        if apiState == crashApi.INACTIVE then
+        if apiState == CFCCrashAPI.INACTIVE then
             frame:Close() -- Server recovered without ever closing
-        elseif apiState == crashApi.SERVER_UP then
+        elseif apiState == CFCCrashAPI.SERVER_UP then
             if btnsPanel.reconBtn:GetDisabled() == true and not btnsPanel.reconBtn.dontEnable then
                 btnsPanel.reconBtn:SetDisabled( false ) -- Server back up
             end
@@ -484,14 +482,14 @@ end
 
 hook.Add( "cfc_di_crashTick", "cfc_di_interfaceUpdate", function( isCrashing, _timeDown, _apiState )
     timeDown = _timeDown or 0
-    if _apiState ~= crashApi.PINGING_API then
+    if _apiState ~= CFCCrashAPI.PINGING_API then
         apiState = _apiState
     end
 
 
     if isCrashing then
         -- Open interface if server is crashing, API has responded, interface isn't already open, and interface has not yet been opened
-        if _apiState == crashApi.PINGING_API or _apiState == crashApi.SERVER_UP then return end
+        if _apiState == CFCCrashAPI.PINGING_API or _apiState == CFCCrashAPI.SERVER_UP then return end
         if interfaceDerma or previouslyShown then return end
         createInterface()
         previouslyShown = true
