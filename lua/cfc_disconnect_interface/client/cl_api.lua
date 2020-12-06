@@ -90,11 +90,11 @@ local function triggerPing()
         function( body, size, headers, code )
             local data = util.JSONToTable( body )
             -- If response is malformed, or empty, set cfc false
-            if not data or data["server-is-up"] == nil then -- Can't use dot notation cuz api field has dashes >:(
+            if not data or data.status == nil then -- Can't use dot notation cuz api field has dashes >:(
                 responses.cfc = false
                 handleResponses()
             else
-                responses.cfc = data["server-is-up"]
+                responses.cfc = data.status == "server-is-up"
                 handleResponses()
             end
         end,
