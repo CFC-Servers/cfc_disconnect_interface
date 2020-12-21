@@ -2,19 +2,19 @@ require( "cfc_promises" )
 
 CFCCrashAPI = {}
 
-local endpointDirectory = "cfc/cfc_disconnect_interface/endpoint.txt"
-
-local endpointCFC = file.Read( endpointDirectory ) or "https://nanny.cfcservers.org/cfc3-ping"
+local endpointCFC = GetConVar( "cfc_disconnect_interface_status_endpoint" ):GetString()
 local endpointGlobal = "https://www.google.com"
 
 local api = CFCCrashAPI
-api.state = api.INACTIVE
 
 api.INACTIVE = 0
 api.PINGING_API = 1
 api.NO_INTERNET = 2
 api.SERVER_DOWN = 3
 api.SERVER_UP = 4
+
+api.state = api.INACTIVE
+api.stateOverride = nil
 
 function api._checkCFCEndpoint()
     local success, body = await( NP.http.fetch( endpointCFC ) )

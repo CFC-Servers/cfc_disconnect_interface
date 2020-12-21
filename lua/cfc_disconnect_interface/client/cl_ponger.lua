@@ -45,9 +45,9 @@ local function checkCrashTick()
     if not lastPong then return end
     if not LocalPlayer():IsValid() then return end -- disconnected or connecting
 
-    local timeout = SysTime() - lastPong
+    local timedown = SysTime() - lastPong
 
-    local inGrace = timeout > GRACE_TIME
+    local inGrace = timedown > GRACE_TIME
 
     if pongerStatus ~= inGrace then
         pongerStatus = inGrace
