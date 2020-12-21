@@ -11,6 +11,8 @@ local pongerStatus = false
 local pingLoopRunning = false
 
 net.Receive( "cfc_di_ping", function()
+    if CFCCrashAPI.stateOverride then return end
+
     if PING_MISS > 0 then -- Allow some pings before actually starting crash systems. ( Avoid bugs on join stutter. )
         PING_MISS = PING_MISS - 1
     else
@@ -53,7 +55,7 @@ local function checkCrashTick()
         pingLoop()
     end
 
-    hook.Run( "cfc_di_crashTick", pongerStatus, timedown, CFCCrashAPI.state )
+    hook.Run( "cfc_di_crashTick", pongerStatus, timedown, CFCCrashAPI.getState() )
 end
 
 -- Ping the server when the client is ready.

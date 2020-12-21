@@ -22,7 +22,7 @@ function api._checkCFCEndpoint()
     if not success then return false end
 
     local data = util.JSONToTable( body )
-    return tobool( data and data["server-is-up"] )
+    return tobool( data and data.status == "server-is-up" )
 end
 api.checkCFCEndpoint = async( api._checkCFCEndpoint )
 
@@ -33,6 +33,8 @@ end
 api.checkGlobalEndpoint = async( api._checkGlobalEndpoint )
 
 function api._ping()
+    if api.stateOverride then return api.stateOverride end
+
     api.state = api.PINGING_API
 
     local _, data = await( promises.all( api.checkCFCEndpoint(), api.checkGlobalEndpoint() ) )
@@ -49,3 +51,23 @@ function api._ping()
     return api.state
 end
 api.ping = async( api._ping )
+
+function api.getState()
+    return api.stateOverride or api.state
+end
+
+concommand.Add( "cfc_di_testcrash", function()
+    api.stateOverride = api.SERVER_DOWN
+end )
+
+concommand.Add( "cfc_di_testnointernet", function()
+    api.stateOverride = api.NO_INTERNET
+end )
+
+concommand.Add( "cfc_di_testrestart", function()
+    api.stateOverride = api.SERVER_UP
+end )
+
+concommand.Add( "cfc_di_testrecover", function()
+    api.stateOverride = nil
+end )
