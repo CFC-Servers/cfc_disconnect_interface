@@ -34,7 +34,7 @@ function dTimer.Simple( delay, f )
     dTimer.idCounter = dTimer.idCounter + 1
 end
 
-hook.Add( "Think", "cfc_di_detatched_timer", function()
+hook.Add( "Think", "CFC_DisconnectInterface_DetatchedTimer", function()
     local time = SysTime()
     for id, curTimer in pairs( dTimer.timers ) do
 

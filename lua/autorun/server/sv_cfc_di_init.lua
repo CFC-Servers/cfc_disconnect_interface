@@ -1,6 +1,6 @@
-util.AddNetworkString( "cfc_di_ping" )
-util.AddNetworkString( "cfc_di_loaded" )
-util.AddNetworkString( "cfc_di_shutdown" )
+util.AddNetworkString( "CFC_DisconnectInterface_Ping" )
+util.AddNetworkString( "CFC_DisconnectInterface_Loaded" )
+util.AddNetworkString( "CFC_DisconnectInterface_Shutdown" )
 
 CreateConVar( "cfc_disconnect_interface_status_endpoint", "https://nanny.cfcservers.org/cfc3-ping", FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_PROTECTED )
 CreateConVar( "cfc_disconnect_interface_restart_time", 180, FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_PROTECTED )

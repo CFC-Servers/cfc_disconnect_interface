@@ -10,7 +10,7 @@ local lastPong
 local pongerStatus = false
 local pingLoopRunning = false
 
-net.Receive( "cfc_di_ping", function()
+net.Receive( "CFC_DisconnectInterface_Ping", function()
     if CFCCrashAPI.stateOverride then return end
 
     if PING_MISS > 0 then -- Allow some pings before actually starting crash systems. ( Avoid bugs on join stutter. )
@@ -21,12 +21,12 @@ net.Receive( "cfc_di_ping", function()
 end )
 
 local function shutdown()
-    dTimer.Remove( "cfc_di_startup" )
-    hook.Remove( "Tick", "cfc_di_tick" )
+    dTimer.Remove( "CFC_DisconnectInterface_Startup" )
+    hook.Remove( "Tick", "CFC_DisconnectInterface_CrashChecker" )
 end
 
-net.Receive( "cfc_di_shutdown", shutdown )
-hook.Add( "ShutDown", "cfc_di_shutdown", shutdown )
+net.Receive( "CFC_DisconnectInterface_Shutdown", shutdown )
+hook.Add( "ShutDown", "CFC_DisconnectInterface_Cleanup", shutdown )
 
 local function _pingLoop()
     if pingLoopRunning then return end
@@ -55,18 +55,18 @@ local function checkCrashTick()
         pingLoop()
     end
 
-    hook.Run( "cfc_di_crashTick", pongerStatus, timedown, CFCCrashAPI.getState() )
+    hook.Run( "CFC_CrashTick", pongerStatus, timedown, CFCCrashAPI.getState() )
 end
 
 -- Ping the server when the client is ready.
-dTimer.Create( "cfc_di_startup", 0.01, 0, function()
+dTimer.Create( "CFC_DisconnectInterface_Startup", 0.01, 0, function()
     if LocalPlayer():IsValid() then
-        dTimer.Remove( "cfc_di_startup" )
+        dTimer.Remove( "CFC_DisconnectInterface_Startup" )
 
-        net.Start( "cfc_di_loaded" )
+        net.Start( "CFC_DisconnectInterface_Loaded" )
         net.SendToServer()
 
         print( "cfc_disconnect_interface loaded." )
-        hook.Add( "Tick", "cfc_di_tick", checkCrashTick )
+        hook.Add( "Tick", "CFC_DisconnectInterface_CrashChecker", checkCrashTick )
     end
 end )

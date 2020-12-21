@@ -56,18 +56,18 @@ function api.getState()
     return api.stateOverride or api.state
 end
 
-concommand.Add( "cfc_di_testcrash", function()
+concommand.Add( "cfc_disconnect_interface_test_crash", function()
     api.stateOverride = api.SERVER_DOWN
 end )
 
-concommand.Add( "cfc_di_testnointernet", function()
+concommand.Add( "cfc_disconnect_interface_test_nointernet", function()
     api.stateOverride = api.NO_INTERNET
 end )
 
-concommand.Add( "cfc_di_testrestart", function()
+concommand.Add( "cfc_disconnect_interface_test_restart", function()
     api.stateOverride = api.SERVER_UP
 end )
 
-concommand.Add( "cfc_di_testrecover", function()
+concommand.Add( "cfc_disconnect_interface_test_recover", function()
     api.stateOverride = nil
 end )
