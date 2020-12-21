@@ -97,17 +97,12 @@ local function leave()
     end )
 end
 
-local init
-
-init = function()
-    http.Fetch( GAME_URL, function( body )
-        GAME_CODE = body
-    end, function()
-        dTimer.Simple( 5, init )
-    end )
-end
-
-hook.Add( "Initialize", "cfc_di_init", init )
+hook.Add( "InitPostEntity", "cfc_di_getGame", async( function()
+    repeat
+        success, GAME_CODE = await( NP.http.fetch( GAME_URL ) )
+        GAME_CODE = success and GAME_CODE
+    until GAME_CODE
+end ) )
 
 -- Creates and populates a title bar for the frame
 local function addTitleBar( frame )
@@ -294,9 +289,9 @@ local function addButtonsBar( frame )
             leave()
         end
     end )
-        -- Color( 74, 251, 191 ), nil, Color( 74, 251, 191 ), Color( 64, 141, 131 ) )
     -- Reconnect button will usually start as disabled
     barPanel.reconBtn:SetDisabled( true )
+
     barPanel.disconBtn = makeButton( barPanel, "DISCONNECT", 0.75, function( self )
         if not barPanel.disconMode then
             showMessage( getDisconnectMessage() )
