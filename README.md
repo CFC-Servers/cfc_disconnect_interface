@@ -2,11 +2,19 @@
 Custom interface to display when the server crashes or the client loses connection  
 You get to play the Dinosaur Game from Google Chrome!
 
-## Debugging
-- First set `DEV_MODE` in `lua/cfc_disconnect_interface/client/cl_api.lua` to `true`
-- Then run any of the follow console commands:
-  - `cfc_di_testcrash` - This imitates the server crashing
-  - `cfc_di_testnointernet` - This imitates the client losing internet connection
-  - `cfc_di_testrestart` - This imitates the server rebooting (but not recovering)
-  - `cfc_di_testrecover` - This imitates the server recovering without crashing (basically a big lag spike)
-- You should run `cfc_di_testrecover` if you want behaviour to return to normal, or before opening another menu
+## Convars (Server-side)
+- `cfc_disconnect_interface_status_endpoint` - (String) The url that will be pinged to check server status.  
+Defaults to `https://nanny.cfcservers.org/cfc3-ping`.  
+Is expected to return a JSON table containing a `status` key, which will be `server-is-up` when the server is running.
+```
+{
+	"status": "server-is-up"
+}
+```
+- `cfc_disconnect_interface_restart_time` - (Int) The number of seconds that will be displayed as the average restart time for the server.  
+Defaults to `180`
+## Commands (Client-side)
+`cfc_disconnect_interface_test_crash` - Mimics the server crashing, showing the interface.
+`cfc_disconnect_interface_test_nointernet` - Mimics your internet disconnecting, showing the interface.
+`cfc_disconnect_interface_test_restart` - Mimics the server restarting, allowing you to reconnect.
+`cfc_disconnect_interface_test_recover` - Mimics the server fully recovering, closing the interface.
