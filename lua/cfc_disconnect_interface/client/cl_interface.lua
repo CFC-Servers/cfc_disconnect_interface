@@ -32,9 +32,7 @@ surface.CreateFont( "CFC_Button",
     }
 )
 
--- local GAME_CODE
-local GAME_URL = "https://cdn.cfcservers.org/media/dinosaur/index.html"
--- local GAME_URL = "http://local:8000/"
+local GAME_URL = GetConVar( "cfc_disconnect_interface_game_url" ):GetString()
 -- Width of the game on the website in pixels, needed as I didn't write the dinosaur game, and it doesn't like centering nicely
 local GAME_WIDTH = 1256
 

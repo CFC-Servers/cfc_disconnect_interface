@@ -16,6 +16,9 @@ You get to play the Dinosaur Game from Google Chrome!
 	```
 - `cfc_disconnect_interface_restart_time` - (Int) The number of seconds that will be displayed as the average restart time for the server.  
 	Defaults to `180`
+- `cfc_disconnect_interface_game_url` - (String) The url to the dinosaur game.  
+    Defaults to `https://cdn.cfcservers.org/media/dinosaur/index.html`
+
 ## Commands (Client-side)
 - `cfc_disconnect_interface_test_crash` - Mimics the server crashing, showing the interface.
 - `cfc_disconnect_interface_test_nointernet` - Mimics your internet disconnecting, showing the interface.
