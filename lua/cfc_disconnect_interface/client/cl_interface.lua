@@ -66,19 +66,19 @@ local function secondsAsTime( s )
 end
 
 local function rejoin()
-    timer.Simple( 1, function()
+    dTimer.Simple( 1, function()
         RunConsoleCommand( "snd_restart" ) -- Restarts sound engine, good practice?
         RunConsoleCommand( "retry" )
     end )
 end
 
 local function leave()
-    timer.Simple( 1, function()
+    dTimer.Simple( 1, function()
         RunConsoleCommand( "disconnect" )
     end )
 end
 
-hook.Add( "InitPostEntity", "cfc_di_getGame", async( function()
+hook.Add( "InitPostEntity", "CFC_DisconnectInterface_GetGame", async( function()
     repeat
         success, GAME_CODE = await( NP.http.fetch( GAME_URL ) )
         GAME_CODE = success and GAME_CODE
@@ -281,7 +281,7 @@ local function addButtonsBar( frame )
         else
             hideMessage()
 
-            timer.Simple( 0.25, function()
+            dTimer.Simple( 0.25, function()
                 showMessage( "You'll have the option to respawn your props when you rejoin." )
             end )
 
@@ -451,7 +451,7 @@ local function createInterface()
     end
 end
 
-hook.Add( "cfc_di_crashTick", "cfc_di_interfaceUpdate", function( isCrashing, _timeDown, _apiState )
+hook.Add( "CFC_CrashTick", "CFC_DisconnectInterface_InterfaceUpdate", function( isCrashing, _timeDown, _apiState )
     timeDown = _timeDown
     if _apiState ~= CFCCrashAPI.PINGING_API then
         apiState = _apiState
