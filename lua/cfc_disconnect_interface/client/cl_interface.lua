@@ -40,7 +40,8 @@ local GAME_WIDTH = 1256
 
 local interfaceDerma = false
 
-local TIME_TO_RESTART = 180
+local TIME_TO_RESTART = GetConVar( "cfc_disconnect_interface_restart_time" ):GetInt()
+
 local timeDown = 0
 local apiState
 local previouslyShown = false
@@ -48,11 +49,6 @@ local disconnectMessages = {}
 disconnectMessages[CFCCrashAPI.SERVER_DOWN] = "Are you sure? Hang in there, the server will restart soon..."
 disconnectMessages[CFCCrashAPI.SERVER_UP] = "Are you sure? The server is already back up and ready!"
 disconnectMessages[CFCCrashAPI.NO_INTERNET] = "Are you sure? If your internet comes back, you can easily rejoin from this page."
-
--- Helper function
-local function getFrom( i, ... )
-    return ( { ... } )[i]
-end
 
 -- Colors
 primaryCol = Color( 36, 41, 67 )
@@ -69,30 +65,15 @@ local function secondsAsTime( s )
     return string.FormattedTime( s, "%02i:%02i" )
 end
 
--- Delay Function
--- Delays a function call until the next "tick", gm_crashsys does this, and I'm assuming its for a reason
-local delayId = 0
-local function delaycall( time, callback )
-    local wait = RealTime() + time
-    delayId = delayId + 1
-    local hookName = "cfc_di_delay_" .. delayId
-    hook.Add( "Tick", hookName, function()
-        if RealTime() > wait then
-            hook.Remove( "Tick", hookName )
-            callback()
-        end
-    end )
-end
-
 local function rejoin()
-    delaycall( 1, function()
+    timer.Simple( 1, function()
         RunConsoleCommand( "snd_restart" ) -- Restarts sound engine, good practice?
         RunConsoleCommand( "retry" )
     end )
 end
 
 local function leave()
-    delaycall( 1, function()
+    timer.Simple( 1, function()
         RunConsoleCommand( "disconnect" )
     end )
 end
@@ -151,8 +132,6 @@ end
 -- xFraction is 0-1 for how far across the button should be
 -- Colours are self explan
 local function makeButton( frame, text, xFraction, doClick, outlineCol, fillCol, hoverOutlineCol, hoverFillCol )
-
-
     local frameW, frameH = frame:GetSize()
     local btn = vgui.Create( "DButton", frame )
 
@@ -245,10 +224,6 @@ local function hideMessage()
     end )
 end
 
-local function getDisconnectMessage()
-    return disconnectMessages[apiState]
-end
-
 -- Create bar panel and add buttons
 local function addButtonsBar( frame )
     local frameW, frameH = frame:GetSize()
@@ -271,7 +246,7 @@ local function addButtonsBar( frame )
         if apiState ~= CFCCrashAPI.SERVER_UP then return end
         if self.backUp then return end
 
-        showMessage( getDisconnectMessage() )
+        showMessage( disconnectMessages[apiState] )
         self.backUp = true
     end
 
@@ -452,8 +427,9 @@ local function createInterface()
     local btnsPanel = addButtonsBar( frame )
 
     -- Create body that fills the unused space
+    local _, y = btnsPanel:GetPos()
     local body = vgui.Create( "DPanel", frame )
-    body:SetSize( frameW - 32, getFrom( 2, btnsPanel:GetPos() ) - 32 - titlePanel:GetTall() )
+    body:SetSize( frameW - 32, y - 32 - titlePanel:GetTall() )
     body:SetPos( 16, titlePanel:GetTall() + 16 )
     local title = populateBody( body )
     titlePanel.setTitle( title )
@@ -476,11 +452,10 @@ local function createInterface()
 end
 
 hook.Add( "cfc_di_crashTick", "cfc_di_interfaceUpdate", function( isCrashing, _timeDown, _apiState )
-    timeDown = _timeDown or 0
+    timeDown = _timeDown
     if _apiState ~= CFCCrashAPI.PINGING_API then
         apiState = _apiState
     end
-
 
     if isCrashing then
         -- Open interface if server is crashing, API has responded, interface isn't already open, and interface has not yet been opened

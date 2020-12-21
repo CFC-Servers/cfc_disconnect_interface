@@ -2,6 +2,8 @@ util.AddNetworkString( "cfc_di_ping" )
 util.AddNetworkString( "cfc_di_loaded" )
 util.AddNetworkString( "cfc_di_shutdown" )
 
+CreateConVar( "cfc_disconnect_interface_status_endpoint", "https://nanny.cfcservers.org/cfc3-ping", FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_PROTECTED )
+CreateConVar( "cfc_disconnect_interface_restart_time", 180, FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_PROTECTED )
 CreateConVar( "sv_mintimeout", 900, FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_PROTECTED )
 
 AddCSLuaFile( "cfc_disconnect_interface/client/cl_ponger.lua" )
