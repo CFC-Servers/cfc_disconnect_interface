@@ -2,6 +2,9 @@
 Custom interface to display when the server crashes or the client loses connection  
 You get to play the Dinosaur Game from Google Chrome!
 
+## Requirements
+- [cfc_network_promises](https://github.com/CFC-Servers/cfc_network_promises)
+
 ## Convars (Server-side)
 - `cfc_disconnect_interface_status_endpoint` - (String) The url that will be pinged to check server status.  
 	Defaults to `https://nanny.cfcservers.org/cfc3-ping`.  
