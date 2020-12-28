@@ -37,7 +37,7 @@ function api._ping()
 
     api.state = api.PINGING_API
 
-    local _, data = await( promises.all( api.checkCFCEndpoint(), api.checkGlobalEndpoint() ) )
+    local _, data = await( promise.all( api.checkCFCEndpoint(), api.checkGlobalEndpoint() ) )
     local cfcStatus, globalStatus = data[1][1], data[2][1]
 
     if cfcStatus and globalStatus then
