@@ -8,6 +8,6 @@ if not timeout or timeout:GetInt() < minTimeout then
     RunConsoleCommand( "cl_timeout", minTimeout )
 end
 
-include( "cfc_disconnect_interface/client/cl_detached_timer.lua" )
+require( "cfc_detached_timer" )
 include( "cfc_disconnect_interface/client/cl_ponger.lua" )
 include( "cfc_disconnect_interface/client/cl_interface.lua" )
