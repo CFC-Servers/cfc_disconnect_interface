@@ -4,6 +4,7 @@ You get to play the Dinosaur Game from Google Chrome!
 
 ## Requirements
 - [cfc_network_promises](https://github.com/CFC-Servers/cfc_network_promises)
+- [cfc_detached_timer](https://github.com/CFC-Servers/cfc_detached_timer)
 
 ## Convars (Server-side)
 - `cfc_disconnect_interface_status_endpoint` - (String) The url that will be pinged to check server status.  
