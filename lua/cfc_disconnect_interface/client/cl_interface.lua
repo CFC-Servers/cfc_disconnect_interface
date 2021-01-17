@@ -267,7 +267,7 @@ local function addButtonsBar( frame )
 
     barPanel.disconBtn = makeButton( barPanel, "DISCONNECT", 0.75, function( self )
         if not barPanel.disconMode then
-            showMessage( getDisconnectMessage() )
+            showMessage( disconnectMessages[apiState] )
             barPanel.disconMode = true
             barPanel.disconPrevDisabled = barPanel.reconBtn:GetDisabled()
             barPanel.reconBtn:SetDisabled( false )
