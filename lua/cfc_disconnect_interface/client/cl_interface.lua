@@ -43,20 +43,24 @@ local TIME_TO_RESTART = GetConVar( "cfc_disconnect_interface_restart_time" ):Get
 local timeDown = 0
 local apiState
 local previouslyShown = false
-local disconnectMessages = {}
-disconnectMessages[CFCCrashAPI.SERVER_DOWN] = "Are you sure? Hang in there, the server will restart soon..."
-disconnectMessages[CFCCrashAPI.SERVER_UP] = "Are you sure? The server is already back up and ready!"
-disconnectMessages[CFCCrashAPI.NO_INTERNET] = "Are you sure? If your internet comes back, you can easily rejoin from this page."
+local disconnectMessages = {
+    [CFCCrashAPI.SERVER_DOWN] = "Are you sure? Hang in there, the server will restart soon...",
+    [CFCCrashAPI.SERVER_UP] = "Are you sure? The server is already back up and ready!",
+    [CFCCrashAPI.NO_INTERNET] = "Are you sure? If your internet comes back, you can easily rejoin from this page."
+}
 
 -- Colors
 primaryCol = Color( 36, 41, 67 )
 secondaryCol = Color( 42, 47, 74 )
 accentCol = Color( 84, 84, 150 )
+whiteCol = Color( 255, 255, 255 )
 
 local function lerpColor( fraction, from, to )
-    return Color( from.r + ( to.r - from.r ) * fraction,
-        from.g + ( to.g - from.g ) * fraction,
-        from.b + ( to.b - from.b ) * fraction )
+    local r = from.r + ( to.r - from.r ) * fraction
+    local g = from.g + ( to.g - from.g ) * fraction
+    local b = from.b + ( to.b - from.b ) * fraction
+
+    return Color( r, g, b )
 end
 
 local function secondsAsTime( s )
@@ -134,13 +138,13 @@ local function makeButton( frame, text, xFraction, doClick, outlineCol, fillCol,
     local btn = vgui.Create( "DButton", frame )
 
     -- Defaults for colours
-    btn.outlineCol = outlineCol or Color( 255, 255, 255 )
+    btn.outlineCol = outlineCol or whiteCol
     btn.fillCol = fillCol or primaryCol
-    btn.hoverOutlineCol = hoverOutlineCol or Color( 255, 255, 255 )
+    btn.hoverOutlineCol = hoverOutlineCol or whiteCol
     btn.hoverFillCol = hoverFillCol or primaryCol
 
     btn:SetText( text )
-    btn:SetTextColor( Color( 255, 255, 255 ) )
+    btn:SetTextColor( whiteCol )
     btn:SetFont( "CFC_Button" )
     btn:SetSize( frameW * 0.3, frameH )
     btn:CenterHorizontal( xFraction )
@@ -240,7 +244,7 @@ local function addButtonsBar( frame )
             self.showOnce = true
         end
 
-        if not self.disconMode then return end
+        if not self.confirmDisconnect then return end
         if apiState ~= CFCCrashAPI.SERVER_UP then return end
         if self.backUp then return end
 
@@ -249,28 +253,36 @@ local function addButtonsBar( frame )
     end
 
     -- Put buttons onto the panel as members for easy access
-    barPanel.reconBtn = makeButton( barPanel, "RECONNECT", 0.25, function()
-        barPanel.reconBtn:SetDisabled( true )
-        barPanel.reconBtn.dontEnable = true
-        barPanel.disconBtn:SetDisabled( true )
+    barPanel.reconBtn = makeButton( barPanel, "AUTO-RECONNECT", 0.25, function( self )
+        local confirmDisconnect = barPanel.confirmDisconnect
 
-        if not barPanel.disconMode then
-            showMessage( "Reconnecting..." )
-            rejoin()
-        else
+        if barPanel.confirmDisconnect then
             showMessage( "Disconnecting..." )
-            leave()
+            barPanel.disconBtn:SetDisabled( true )
+            return leave()
         end
+
+        local serverDown = apiState ~= CFCCrashAPI.SERVER_UP
+
+        if serverDown then
+            self.autoJoin = not self.autoJoin
+
+            local text = self.autoJoin and "WAITING..." or "AUTO-RECONNECT"
+            self:SetText( text )
+
+            return
+        end
+
+        showMessage( "Reconnecting..." )
+        barPanel.disconBtn:SetDisabled( true )
+        rejoin()
     end )
-    -- Reconnect button will usually start as disabled
-    barPanel.reconBtn:SetDisabled( true )
+    barPanel.autoJoin = false
 
     barPanel.disconBtn = makeButton( barPanel, "DISCONNECT", 0.75, function( self )
-        if not barPanel.disconMode then
+        if not barPanel.confirmDisconnect then
             showMessage( disconnectMessages[apiState] )
-            barPanel.disconMode = true
-            barPanel.disconPrevDisabled = barPanel.reconBtn:GetDisabled()
-            barPanel.reconBtn:SetDisabled( false )
+            barPanel.confirmDisconnect = true
             self:SetText( "NO" )
             self.fadeState = 0
             self.hoverOutlineCol = Color( 255, 0, 0 )
@@ -283,12 +295,11 @@ local function addButtonsBar( frame )
                 showMessage( "You'll have the option to respawn your props when you rejoin." )
             end )
 
-            barPanel.disconMode = false
+            barPanel.confirmDisconnect = false
             self:SetText( "DISCONNECT" )
             self.hoverOutlineCol = Color( 255, 255, 255 )
             barPanel.reconBtn:SetText( "RECONNECT" )
             barPanel.reconBtn.hoverOutlineCol = Color( 255, 255, 255 )
-            barPanel.reconBtn:SetDisabled( barPanel.disconPrevDisabled )
         end
     end )
 
@@ -355,7 +366,7 @@ local function populateBodyServerDown( body )
         end
     end
 
-    return "Oops, looks like the server crashed..."
+    return "The server is restarting..."
 end
 
 -- Fill the body with elements, body created elsewhere as it's size relies on size of titleBar and buttonsBar
@@ -422,13 +433,15 @@ local function createInterface()
 
     -- Generate title and buttons bars
     local titlePanel = addTitleBar( frame )
-    local btnsPanel = addButtonsBar( frame )
+    local buttonsPanel = addButtonsBar( frame )
 
     -- Create body that fills the unused space
-    local _, y = btnsPanel:GetPos()
+    local _, y = buttonsPanel:GetPos()
+
     local body = vgui.Create( "DPanel", frame )
     body:SetSize( frameW - 32, y - 32 - titlePanel:GetTall() )
     body:SetPos( 16, titlePanel:GetTall() + 16 )
+
     local title = populateBody( body )
     titlePanel.setTitle( title )
 
@@ -438,8 +451,8 @@ local function createInterface()
         if apiState == CFCCrashAPI.INACTIVE then
             frame:Close() -- Server recovered without ever closing
         elseif apiState == CFCCrashAPI.SERVER_UP then
-            if btnsPanel.reconBtn:GetDisabled() == true and not btnsPanel.reconBtn.dontEnable then
-                btnsPanel.reconBtn:SetDisabled( false ) -- Server back up
+            if buttonsPanel.reconBtn.autoJoin then
+                rejoin()
             end
         end
     end

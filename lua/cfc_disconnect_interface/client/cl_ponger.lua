@@ -60,13 +60,12 @@ end
 
 -- Ping the server when the client is ready.
 dTimer.Create( "CFC_DisconnectInterface_Startup", 0.01, 0, function()
-    if LocalPlayer():IsValid() then
-        dTimer.Remove( "CFC_DisconnectInterface_Startup" )
+    if not LocalPlayer():IsValid() then return end
+    dTimer.Remove( "CFC_DisconnectInterface_Startup" )
 
-        net.Start( "CFC_DisconnectInterface_Loaded" )
-        net.SendToServer()
+    net.Start( "CFC_DisconnectInterface_Loaded" )
+    net.SendToServer()
 
-        print( "cfc_disconnect_interface loaded." )
-        hook.Add( "Tick", "CFC_DisconnectInterface_CrashChecker", checkCrashTick )
-    end
+    print( "cfc_disconnect_interface loaded." )
+    hook.Add( "Tick", "CFC_DisconnectInterface_CrashChecker", checkCrashTick )
 end )
