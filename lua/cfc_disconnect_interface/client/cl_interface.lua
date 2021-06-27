@@ -35,6 +35,7 @@ surface.CreateFont( "CFC_Button",
 local GAME_URL = GetConVar( "cfc_disconnect_interface_game_url" ):GetString()
 -- Width of the game on the website in pixels, needed as I didn't write the dinosaur game, and it doesn't like centering nicely
 local GAME_WIDTH = 1256
+local GAME_CODE
 
 local interfaceDerma = false
 
@@ -76,12 +77,17 @@ local function leave()
     end )
 end
 
-hook.Add( "InitPostEntity", "CFC_DisconnectInterface_GetGame", async( function()
+local function getGame()
+    local success
     repeat
         success, GAME_CODE = await( NP.http.fetch( GAME_URL ) )
         GAME_CODE = success and GAME_CODE
     until GAME_CODE
-end ) )
+end
+
+hook.Add( "InitPostEntity", "CFC_DisconnectInterface_GetGame", function()
+    asyncCall( getGame )
+end )
 
 -- Creates and populates a title bar for the frame
 local function addTitleBar( frame )
