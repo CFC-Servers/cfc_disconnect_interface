@@ -340,6 +340,7 @@ local function populateBodyServerDown( body )
         if apiState == CFCCrashAPI.SERVER_UP and not self.backUp then
             self:setTextAndAlign( "It was down for" )
             self.backUp = true
+            LocalPlayer():EmitSound( "garrysmod/save_load1.wav" )
         end
     end
 
