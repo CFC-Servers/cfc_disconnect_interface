@@ -1,9 +1,10 @@
 local PING_TIME = 1
 
 local players = {}
+local unreliable = true
 
 local function ping( ply )
-    net.Start( "CFC_DisconnectInterface_Ping" )
+    net.Start( "CFC_DisconnectInterface_Ping", unreliable )
     net.Send( ply or players )
 end
 
