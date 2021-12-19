@@ -460,6 +460,9 @@ end
 local isShuttingDownManually = false
 hook.Add( "ShutDown", "CFC_DisconnectInterface_MarkShutdown", function()
     isShuttingDownManually = true
+    if interfaceDerma then
+        interfaceDerma:Close()
+    end
 end )
 
 hook.Add( "CFC_CrashTick", "CFC_DisconnectInterface_InterfaceUpdate", function( isCrashing, _timeDown, _apiState )
