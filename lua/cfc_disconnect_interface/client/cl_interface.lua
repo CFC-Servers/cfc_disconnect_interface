@@ -457,21 +457,13 @@ local function createInterface()
 end
 
 
-local isShuttingDownManually = false
-hook.Add( "ShutDown", "CFC_DisconnectInterface_MarkShutdown", function()
-    isShuttingDownManually = true
-    if interfaceDerma then
-        interfaceDerma:Close()
-    end
-end )
-
 hook.Add( "CFC_CrashTick", "CFC_DisconnectInterface_InterfaceUpdate", function( isCrashing, _timeDown, _apiState )
     timeDown = _timeDown
     if _apiState ~= CFCCrashAPI.PINGING_API then
         apiState = _apiState
     end
-
-    if isCrashing and not isShuttingDownManually then
+    local shouldShowInterface = hook.Run("CFC_DisconnectInterface_ShouldShowInterface")
+    if shouldShowInterface ~= false and isCrashing and then
         -- Open interface if server is crashing, API has responded, interface isn't already open, and interface has not yet been opened
         if _apiState == CFCCrashAPI.PINGING_API or _apiState == CFCCrashAPI.SERVER_UP then return end
         if interfaceDerma or previouslyShown then return end
