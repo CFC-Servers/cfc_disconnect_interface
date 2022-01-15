@@ -242,7 +242,9 @@ local function addButtonsBar( frame )
     barPanel.Paint = nil
     function barPanel:Think()
         if not self.showOnce then
-            showMessage( "You'll have the option to respawn your props when you rejoin." )
+            if GAMEMODE_NAME == "sandbox" then
+                showMessage( "You'll have the option to respawn your props when you rejoin." )
+            end
             self.showOnce = true
         end
 
