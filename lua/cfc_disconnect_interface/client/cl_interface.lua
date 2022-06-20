@@ -65,6 +65,8 @@ local function secondsAsTime( s )
 end
 
 local function rejoin()
+    Mixpanel:TrackEvent( "cfc-di-player-rejoin", { waitTime = timeDown }, true )
+
     dTimer.Simple( 1, function()
         RunConsoleCommand( "snd_restart" ) -- Restarts sound engine, good practice?
         RunConsoleCommand( "retry" )
@@ -72,6 +74,8 @@ local function rejoin()
 end
 
 local function leave()
+    Mixpanel:TrackEvent( "cfc-di-player-leave", { waitTime = timeDown }, true )
+
     dTimer.Simple( 1, function()
         RunConsoleCommand( "disconnect" )
     end )
@@ -111,6 +115,7 @@ local function addTitleBar( frame )
     closeBtn:SetPos( frameW - closeBtnSize - closeBtnPadding, closeBtnPadding )
     closeBtn:SetImage( "icons/cross.png" )
     function closeBtn:DoClick()
+        Mixpanel:TrackEvent( "cfc-di-player-closed-menu" )
         frame:Close()
     end
 
