@@ -205,21 +205,24 @@ local function makeButton( frame, text, xFraction, doClick, outlineCol, fillCol,
     return btn
 end
 
-local function showMessage( msg )
+local function showMessage( msg, col )
     if not interfaceDerma then return end
-    if interfaceDerma.messageLabel:GetText() == msg and interfaceDerma.messageLabel:IsVisible() then return end
+    local label = interfaceDerma.messageLabel
 
-    if interfaceDerma.messageLabel:IsVisible() then
-        interfaceDerma.messageLabel:AlphaTo( 0, 0.25 )
+    if label:GetText() == msg and label:IsVisible() then return end
+
+    if label:IsVisible() then
+        label:AlphaTo( 0, 0.25 )
         dTimer.Simple( 0.25, function()
-            interfaceDerma.messageLabel:setTextAndAlign( msg )
-            interfaceDerma.messageLabel:AlphaTo( 255, 0.25 )
+            label:setTextAndAlign( msg, col )
+            label:AlphaTo( 255, 0.25 )
         end )
     else
-        interfaceDerma.messageLabel:setTextAndAlign( msg )
-        interfaceDerma.messageLabel:Show()
-        interfaceDerma.messageLabel:AlphaTo( 255, 0.5 )
+        label:setTextAndAlign( msg, col )
+        label:Show()
+        label:AlphaTo( 255, 0.5 )
     end
+
 end
 
 local function hideMessage()
@@ -260,6 +263,7 @@ local function addButtonsBar( frame )
         self.backUp = true
     end
 
+    local green = Color( 50, 255, 50 )
     -- Put buttons onto the panel as members for easy access
     barPanel.reconBtn = makeButton( barPanel, "AUTO-RECONNECT", 0.25, function( self )
         if barPanel.confirmDisconnect then
@@ -276,6 +280,18 @@ local function addButtonsBar( frame )
             local text = self.autoJoin and "WAITING..." or "AUTO-RECONNECT"
             self:SetText( text )
 
+            if self.autoJoin then
+                dTimer.Simple( 0.15, function()
+                    self.outlineCol = green
+                end )
+                showMessage( "You'll automatically rejoin the server when it's up", green )
+            else
+                dTimer.Simple( 0.15, function()
+                    self.outlineCol = Color( 255, 255, 255 )
+                end )
+                showMessage( "You'll have the option to respawn your props when you rejoin." )
+            end
+
             return
         end
 
@@ -283,6 +299,13 @@ local function addButtonsBar( frame )
         barPanel.disconBtn:SetDisabled( true )
         rejoin()
     end )
+    function barPanel.reconBtn:Think()
+        if apiState ~= CFCCrashAPI.SERVER_UP then return end
+
+        local text = self.autoJoin and "RECONNECTING..." or "RECONNECT"
+        self:SetText( text )
+        self.Think = nil
+    end
     barPanel.autoJoin = false
 
     barPanel.disconBtn = makeButton( barPanel, "DISCONNECT", 0.75, function( self )
@@ -317,11 +340,11 @@ local function makeLabel( frame, text, top, col, xFraction, font )
     col = col or Color( 255, 255, 255 )
     local label = vgui.Create( "DLabel", frame )
     label:SetFont( font or "CFC_Special" )
-    function label:setTextAndAlign( str )
+    function label:setTextAndAlign( str, colOverride )
         self:SetText( str )
         self:SizeToContents()
         self:SetPos( 0, top )
-        self:SetTextColor( col )
+        self:SetTextColor( colOverride or col )
         self:CenterHorizontal( xFraction )
     end
     label:setTextAndAlign( text )
@@ -386,6 +409,7 @@ local function populateBody( body )
     interfaceDerma.messageLabel = makeLabel( body, "", frameH - 45, Color( 255, 255, 0 ), 0.5 )
     interfaceDerma.messageLabel:SetAlpha( 0 )
     interfaceDerma.messageLabel:Hide()
+    interfaceDerma.defaultColor = Color( 255, 255, 0 )
 
     -- Fill top text based on CFCCrashAPI state
     if apiState == CFCCrashAPI.NO_INTERNET then
