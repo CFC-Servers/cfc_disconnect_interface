@@ -8,7 +8,7 @@ local function ping( ply )
     net.Send( ply or players )
 end
 
-net.Receive( "CFC_DisconnectInterface_Loaded", function( len, ply )
+net.Receive( "CFC_DisconnectInterface_Loaded", function( _, ply )
     if not IsValid( ply ) then return end
     if not table.HasValue( players, ply ) then
         table.insert( players, ply )
