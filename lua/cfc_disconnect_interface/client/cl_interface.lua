@@ -262,8 +262,6 @@ local function addButtonsBar( frame )
 
     -- Put buttons onto the panel as members for easy access
     barPanel.reconBtn = makeButton( barPanel, "AUTO-RECONNECT", 0.25, function( self )
-        local confirmDisconnect = barPanel.confirmDisconnect
-
         if barPanel.confirmDisconnect then
             showMessage( "Disconnecting..." )
             barPanel.disconBtn:SetDisabled( true )
