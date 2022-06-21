@@ -51,10 +51,11 @@ local disconnectMessages = {
 }
 
 -- Colors
-primaryCol = Color( 36, 41, 67 )
-secondaryCol = Color( 42, 47, 74 )
-accentCol = Color( 84, 84, 150 )
-whiteCol = Color( 255, 255, 255 )
+local primaryCol = Color( 36, 41, 67 )
+local secondaryCol = Color( 42, 47, 74 )
+-- local accentCol = Color( 84, 84, 150 )
+local whiteCol = Color( 255, 255, 255 )
+local greenCol = Color( 50, 255, 50 )
 
 local function lerpColor( fraction, from, to )
     local r = from.r + ( to.r - from.r ) * fraction
@@ -250,7 +251,7 @@ local function addButtonsBar( frame )
     function barPanel:Think()
         if not self.showOnce then
             if GAMEMODE_NAME == "sandbox" then
-                showMessage( "You'll have the option to respawn your props when you rejoin." )
+                showMessage( "You'll automatically rejoin the server when it's up", greenCol )
             end
             self.showOnce = true
         end
@@ -263,9 +264,8 @@ local function addButtonsBar( frame )
         self.backUp = true
     end
 
-    local green = Color( 50, 255, 50 )
     -- Put buttons onto the panel as members for easy access
-    barPanel.reconBtn = makeButton( barPanel, "AUTO-RECONNECT", 0.25, function( self )
+    barPanel.reconBtn = makeButton( barPanel, "WAITING...", 0.25, function( self )
         if barPanel.confirmDisconnect then
             showMessage( "Disconnecting..." )
             barPanel.disconBtn:SetDisabled( true )
@@ -282,12 +282,12 @@ local function addButtonsBar( frame )
 
             if self.autoJoin then
                 dTimer.Simple( 0.15, function()
-                    self.outlineCol = green
+                    self.outlineCol = greenCol
                 end )
                 showMessage( "You'll automatically rejoin the server when it's up", green )
             else
                 dTimer.Simple( 0.15, function()
-                    self.outlineCol = Color( 255, 255, 255 )
+                    self.outlineCol = whiteCol
                 end )
                 showMessage( "You'll have the option to respawn your props when you rejoin." )
             end
@@ -306,7 +306,7 @@ local function addButtonsBar( frame )
         self:SetText( text )
         self.Think = nil
     end
-    barPanel.autoJoin = false
+    barPanel.autoJoin = true
 
     barPanel.disconBtn = makeButton( barPanel, "DISCONNECT", 0.75, function( self )
         if not barPanel.confirmDisconnect then
@@ -326,9 +326,9 @@ local function addButtonsBar( frame )
 
             barPanel.confirmDisconnect = false
             self:SetText( "DISCONNECT" )
-            self.hoverOutlineCol = Color( 255, 255, 255 )
+            self.hoverOutlineCol = whiteCol
             barPanel.reconBtn:SetText( "RECONNECT" )
-            barPanel.reconBtn.hoverOutlineCol = Color( 255, 255, 255 )
+            barPanel.reconBtn.hoverOutlineCol = whiteCol
         end
     end )
 
@@ -337,7 +337,7 @@ end
 
 -- Making lines of text for body
 local function makeLabel( frame, text, top, col, xFraction, font )
-    col = col or Color( 255, 255, 255 )
+    col = col or whiteCol
     local label = vgui.Create( "DLabel", frame )
     label:SetFont( font or "CFC_Special" )
     function label:setTextAndAlign( str, colOverride )
