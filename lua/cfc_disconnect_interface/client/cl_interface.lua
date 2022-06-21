@@ -55,6 +55,8 @@ local primaryCol = Color( 36, 41, 67 )
 local secondaryCol = Color( 42, 47, 74 )
 -- local accentCol = Color( 84, 84, 150 )
 local whiteCol = Color( 255, 255, 255 )
+local redCol = Color( 255, 0, 0 )
+local yellowCol = Color( 255, 255, 0 )
 local greenCol = Color( 50, 255, 50 )
 
 local function lerpColor( fraction, from, to )
@@ -226,16 +228,6 @@ local function showMessage( msg, col )
 
 end
 
-local function hideMessage()
-    if not interfaceDerma then return end
-    if not interfaceDerma.messageLabel:IsVisible() then return end
-
-    interfaceDerma.messageLabel:AlphaTo( 0, 0.25 )
-    dTimer.Simple( 0.25, function()
-        interfaceDerma.messageLabel:Hide()
-    end )
-end
-
 -- Create bar panel and add buttons
 local function addButtonsBar( frame )
     local frameW, frameH = frame:GetSize()
@@ -267,7 +259,7 @@ local function addButtonsBar( frame )
     -- Put buttons onto the panel as members for easy access
     barPanel.reconBtn = makeButton( barPanel, "WAITING...", 0.25, function( self )
         if barPanel.confirmDisconnect then
-            showMessage( "Disconnecting..." )
+            showMessage( "Disconnecting...", redCol )
             barPanel.disconBtn:SetDisabled( true )
             return leave()
         end
@@ -282,31 +274,54 @@ local function addButtonsBar( frame )
 
             if self.autoJoin then
                 dTimer.Simple( 0.15, function()
+                    self.fadeState = 0
                     self.outlineCol = greenCol
+                    self.hoverOutlineCol = redCol
                 end )
-                showMessage( "You'll automatically rejoin the server when it's up", green )
+                showMessage( "You'll automatically rejoin the server when it's up", greenCol )
             else
                 dTimer.Simple( 0.15, function()
+                    self.fadeState = 0
                     self.outlineCol = whiteCol
+                    self.hoverOutlineCol = greenCol
                 end )
-                showMessage( "You'll have the option to respawn your props when you rejoin." )
+                showMessage( "You'll have the option to respawn your props when you rejoin.", yellowCol )
             end
 
             return
         end
 
-        showMessage( "Reconnecting..." )
+        showMessage( "Reconnecting...", greenCol )
         barPanel.disconBtn:SetDisabled( true )
         rejoin()
     end )
-    function barPanel.reconBtn:Think()
-        if apiState ~= CFCCrashAPI.SERVER_UP then return end
 
-        local text = self.autoJoin and "RECONNECTING..." or "RECONNECT"
+    barPanel.reconBtn._Think = barPanel.reconBtn.Think
+    function barPanel.reconBtn:Think()
+        self:_Think()
+
+        local text
+
+        if barPanel.confirmDisconnect then
+            text = "YES"
+
+        else
+            if apiState == CFCCrashAPI.SERVER_UP then
+                text = self.autoJoin and "RECONNECTING..." or "RECONNECT"
+            else
+                if self:IsHovered() then
+                    text = self.autoJoin and "CANCEL" or "AUTO-RECONNECT"
+                else
+                    text = self.autoJoin and "WAITING..." or "AUTO-RECONNECT"
+                end
+            end
+        end
+
         self:SetText( text )
-        self.Think = nil
     end
-    barPanel.autoJoin = true
+    barPanel.reconBtn.outlineCol = greenCol
+    barPanel.reconBtn.autoJoin = true
+    barPanel.reconBtn.hoverOutlineCol = redCol
 
     barPanel.disconBtn = makeButton( barPanel, "DISCONNECT", 0.75, function( self )
         if not barPanel.confirmDisconnect then
@@ -314,21 +329,33 @@ local function addButtonsBar( frame )
             barPanel.confirmDisconnect = true
             self:SetText( "NO" )
             self.fadeState = 0
-            self.hoverOutlineCol = Color( 255, 0, 0 )
-            barPanel.reconBtn.hoverOutlineCol = Color( 0, 255, 0 )
-            barPanel.reconBtn:SetText( "YES" )
+            self.hoverOutlineCol = redCol
+
+            local recon = barPanel.reconBtn
+            recon.fadeState = 0
+
+            recon.savedOutlineCol = recon.outlineCol
+            recon.savedHoverOutlineCol = recon.hoverOutlineCol
+
+            recon.outlineCol = whiteCol
+            recon.hoverOutlineCol = greenCol
         else
-            hideMessage()
+            --hideMessage()
+            --
+            local recon = barPanel.reconBtn
+            recon.outlineCol = recon.savedOutlineCol
+            recon.hoverOutlineCol = recon.savedHoverOutlineCol
+
+            recon.savedOutlineCol = nil
+            recon.savedHoverOutlineCol = nil
 
             dTimer.Simple( 0.25, function()
-                showMessage( "You'll have the option to respawn your props when you rejoin." )
+                showMessage( "You'll have the option to respawn your props when you rejoin.", yellowCol )
             end )
 
             barPanel.confirmDisconnect = false
             self:SetText( "DISCONNECT" )
             self.hoverOutlineCol = whiteCol
-            barPanel.reconBtn:SetText( "RECONNECT" )
-            barPanel.reconBtn.hoverOutlineCol = whiteCol
         end
     end )
 
@@ -386,13 +413,13 @@ local function populateBodyServerDown( body )
         if apiState ~= CFCCrashAPI.SERVER_UP then
             self:setTextAndAlign( secondsAsTime( math.floor( timeDown ) ) )
             if timeDown > TIME_TO_RESTART then
-                self:SetTextColor( Color( 255, 0, 0 ) )
+                self:SetTextColor( redCol )
                 if not interfaceDerma.messageLabel:IsVisible() then
                     showMessage( "Uh oh, seems it's taking a little longer than usual..." )
                 end
             end
         else
-            self:SetTextColor( Color( 0, 255, 0 ) )
+            self:SetTextColor( greenCol )
         end
     end
 
@@ -406,10 +433,9 @@ local function populateBody( body )
     local frameW, frameH = body:GetSize()
 
     -- Warning message label
-    interfaceDerma.messageLabel = makeLabel( body, "", frameH - 45, Color( 255, 255, 0 ), 0.5 )
+    interfaceDerma.messageLabel = makeLabel( body, "", frameH - 45, greenCol, 0.5 )
     interfaceDerma.messageLabel:SetAlpha( 0 )
     interfaceDerma.messageLabel:Hide()
-    interfaceDerma.defaultColor = Color( 255, 255, 0 )
 
     -- Fill top text based on CFCCrashAPI state
     if apiState == CFCCrashAPI.NO_INTERNET then
