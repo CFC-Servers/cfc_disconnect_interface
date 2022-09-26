@@ -525,7 +525,7 @@ hook.Add( "CFC_CrashTick", "CFC_DisconnectInterface_InterfaceUpdate", function( 
     if _apiState ~= CFCCrashAPI.PINGING_API then
         apiState = _apiState
     end
-    local shouldShowInterface = hook.Run("CFC_DisconnectInterface_ShouldShowInterface")
+    local shouldShowInterface = hook.Run( "CFC_DisconnectInterface_ShouldShowInterface" )
     if shouldShowInterface ~= false and isCrashing then
         -- Open interface if server is crashing, API has responded, interface isn't already open, and interface has not yet been opened
         if _apiState == CFCCrashAPI.PINGING_API or _apiState == CFCCrashAPI.SERVER_UP then return end
