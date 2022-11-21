@@ -4,6 +4,7 @@ local players = {}
 local unreliable = true
 
 local function ping( ply )
+    if ply == nil and #players == 0 then return end
     net.Start( "CFC_DisconnectInterface_Ping", unreliable )
     net.Send( ply or players )
 end
