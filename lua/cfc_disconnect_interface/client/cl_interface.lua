@@ -520,6 +520,13 @@ local function createInterface()
 end
 
 
+hook.Add( "ShutDown", "CFC_DisconnectInterface_Shutdown", function()
+    if interfaceDerma then
+        interfaceDerma:Close()
+    end
+end )
+
+
 hook.Add( "CFC_CrashTick", "CFC_DisconnectInterface_InterfaceUpdate", function( isCrashing, _timeDown, _apiState )
     timeDown = _timeDown
     if _apiState ~= CFCCrashAPI.PINGING_API then
