@@ -577,7 +577,9 @@ local function createInterface()
         end
 
         local rejoinOn = buttonsPanel.reconBtn.autoJoin
-        miniWindow.rejoinLabel = makeLabel( miniWindow, "Rejoin " .. ( rejoinOn and "enabled" or "disabled" ), 60, rejoinOn and greenCol or yellowCol )
+        local rejoinStr = rejoinOn and "enabled" or "disabled"
+        local txtColor = rejoinOn and greenCol or yellowCol
+        miniWindow.rejoinLabel = makeLabel( miniWindow, "Rejoin " .. rejoinStr, 60, txtColor )
     end
 
     function frame:OnClose()
