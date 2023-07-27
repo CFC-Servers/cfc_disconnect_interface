@@ -37,7 +37,7 @@ local GAME_URL = GetConVar( "cfc_disconnect_interface_game_url" ):GetString()
 local GAME_WIDTH = 1256
 local GAME_CODE
 
-local interfaceDerma = false
+-- local interfaceDerma = false
 
 local TIME_TO_RESTART = GetConVar( "cfc_disconnect_interface_restart_time" ):GetInt()
 
@@ -53,7 +53,7 @@ local disconnectMessages = {
 -- Colors
 local primaryCol = Color( 36, 41, 67 )
 local secondaryCol = Color( 42, 47, 74 )
--- local accentCol = Color( 84, 84, 150 )
+local accentCol = Color( 84, 84, 150 )
 local whiteCol = Color( 255, 255, 255 )
 local redCol = Color( 255, 0, 0 )
 local yellowCol = Color( 255, 255, 0 )
@@ -118,7 +118,12 @@ local function addTitleBar( frame )
     closeBtn:SetPos( frameW - closeBtnSize - closeBtnPadding, closeBtnPadding )
     closeBtn:SetImage( "icons/cross.png" )
     function closeBtn:DoClick()
-        frame:Close()
+        if frame.OnHide then
+            frame:Hide()
+            frame:OnHide()
+        else
+            frame:Close()
+        end
     end
 
     -- Title label
@@ -513,9 +518,74 @@ local function createInterface()
             end
         end
     end
+    -- Custom method used for hiding the main popup
+    function frame:OnHide()
+        local miniWindow = frame._miniWindow
+        if miniWindow then
+            miniWindow:Show()
+            local rejoinOn = buttonsPanel.reconBtn.autoJoin
+            miniWindow.rejoinLabel:setTextAndAlign( "Rejoin " .. ( rejoinOn and "enabled" or "disabled" ) )
+            miniWindow.rejoinLabel:SetTextColor( rejoinOn and greenCol or yellowCol )
+            return
+        end
+
+        miniWindow = vgui.Create( "DFrame" )
+        frame._miniWindow = miniWindow
+        local miniW, miniH = 200, 100
+        miniWindow:SetSize( miniW, miniH )
+        local screenWidth = ScrW()
+        miniWindow:SetPos( screenWidth - miniW - 30, 30 )
+        miniWindow:SetTitle( "Mini window" )
+        miniWindow:SetDraggable( true )
+        miniWindow:SetScreenLock( true )
+        miniWindow:ShowCloseButton( false )
+
+        local curTimeLabel = makeLabel( miniWindow, secondsAsTime( math.floor( timeDown ) ), 30, Color( 251, 191, 83 ), 0.5, "CFC_Mono" )
+        function curTimeLabel:Think()
+            if apiState ~= CFCCrashAPI.SERVER_UP then
+                self:setTextAndAlign( secondsAsTime( math.floor( timeDown ) ) )
+            else
+                self:SetTextColor( greenCol )
+            end
+        end
+
+        local btn = vgui.Create( "DButton", miniWindow )
+        btn:SetText( "" )
+        btn:SetSize( miniW, miniH - 25 )
+        btn:SetPos( 0, 25 )
+        btn:SetMouseInputEnabled( true )
+
+        function btn:Paint( w, h )
+            if not btn:IsHovered() then return end
+            surface.SetDrawColor( accentCol )
+            surface.DrawRect( 0, 0, w, h )
+
+            surface.SetFont( "CFC_Special" )
+            surface.SetTextColor( greenCol:Unpack() )
+            surface.SetTextPos( w / 4, 10 )
+            surface.DrawText( "Maximize" )
+        end
+        btn.Think = frame.Think
+        function btn:DoClick()
+            frame:Show()
+            miniWindow:Hide()
+        end
+
+        function miniWindow:Paint( w, h )
+            surface.SetDrawColor( primaryCol )
+            surface.DrawRect( 0, 0, w, h )
+        end
+
+        local rejoinOn = buttonsPanel.reconBtn.autoJoin
+        miniWindow.rejoinLabel = makeLabel( miniWindow, "Rejoin " .. ( rejoinOn and "enabled" or "disabled" ), 60, rejoinOn and greenCol or yellowCol )
+    end
 
     function frame:OnClose()
         interfaceDerma = nil
+        local miniWindow = frame._miniWindow
+        if miniWindow then
+            miniWindow:Close()
+        end
     end
 end
 
@@ -543,6 +613,9 @@ hook.Add( "CFC_CrashTick", "CFC_DisconnectInterface_InterfaceUpdate", function( 
         -- Close menu if server stops crashing
         previouslyShown = false
         if interfaceDerma then
+            if interfaceDerma._miniWindow then
+                interfaceDerma._miniWindow:Remove()
+            end
             interfaceDerma:Close()
         end
     end
