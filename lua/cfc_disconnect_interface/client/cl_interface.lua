@@ -37,7 +37,7 @@ local GAME_URL = GetConVar( "cfc_disconnect_interface_game_url" ):GetString()
 local GAME_WIDTH = 1256
 local GAME_CODE
 
--- local interfaceDerma = false
+local interfaceDerma = false
 
 local TIME_TO_RESTART = GetConVar( "cfc_disconnect_interface_restart_time" ):GetInt()
 
