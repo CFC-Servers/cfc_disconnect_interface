@@ -8,7 +8,7 @@ You get to play the Dinosaur Game from Google Chrome!
 
 ## Convars (Server-side)
 - `cfc_disconnect_interface_status_endpoint` - (String) The url that will be pinged to check server status.  
-	Defaults to `https://nanny.cfcservers.org/cfc3-ping`.  
+	Defaults to `https://nanny.cfcservers.org/cfc3/ping`.  
 	Is expected to return a JSON table containing a `status` key, which will be `server-is-up` when the server is running.
 	```
 	{
@@ -18,7 +18,7 @@ You get to play the Dinosaur Game from Google Chrome!
 - `cfc_disconnect_interface_restart_time` - (Int) The number of seconds that will be displayed as the average restart time for the server.  
 	Defaults to `180`
 - `cfc_disconnect_interface_game_url` - (String) The url to the dinosaur game.  
-    Defaults to `https://cdn.cfcservers.org/media/dinosaur/index.html`
+    Defaults to `https://loading.cfcservers.org/dino.html`
 
 ## Commands (Client-side)
 - `cfc_disconnect_interface_test_crash` - Mimics the server crashing, showing the interface.
