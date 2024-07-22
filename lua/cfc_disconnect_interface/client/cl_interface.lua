@@ -16,11 +16,27 @@ surface.CreateFont( "CFC_Special",
     }
 )
 
+surface.CreateFont( "CFC_Special_Small",
+    {
+        font = "coolvetica",
+        size = 22,
+        weight = 400
+    }
+)
+
 surface.CreateFont( "CFC_Mono",
     {
         font = "Lucida Console",
         size = 30,
         weight = 1500
+    }
+)
+
+surface.CreateFont( "CFC_Mono_Small",
+    {
+        font = "Lucida Console",
+        size = 18,
+        weight = 400,
     }
 )
 
@@ -189,16 +205,16 @@ local function makeButton( frame, text, xFraction, doClick, outlineCol, fillCol,
         local lineCol
         local bgCol
         local borderWeight
-        if self:GetDisabled() then
-            lineCol = Color( 74, 74, 74 )
-            bgCol = self.fillCol
-            borderWeight = btnBorderWeight
-            self:SetCursor( "no" )
-        else
+        if self:IsEnabled() then
             lineCol = lerpColor( self.fadeState, self.outlineCol, self.hoverOutlineCol )
             bgCol = lerpColor( self.fadeState, self.fillCol, self.hoverFillCol )
             borderWeight = 1.5 * btnBorderWeight + 1.5 * self.fadeState * btnBorderWeight
             self:SetCursor( "hand" )
+        else
+            lineCol = Color( 74, 74, 74 )
+            bgCol = self.fillCol
+            borderWeight = btnBorderWeight
+            self:SetCursor( "no" )
         end
 
         self:SetTextColor( lineCol )
@@ -265,7 +281,7 @@ local function addButtonsBar( frame )
     barPanel.reconBtn = makeButton( barPanel, "WAITING...", 0.25, function( self )
         if barPanel.confirmDisconnect then
             showMessage( "Disconnecting...", redCol )
-            barPanel.disconBtn:SetDisabled( true )
+            barPanel.disconBtn:SetEnabled( false )
             return leave()
         end
 
@@ -297,7 +313,7 @@ local function addButtonsBar( frame )
         end
 
         showMessage( "Reconnecting...", greenCol )
-        barPanel.disconBtn:SetDisabled( true )
+        barPanel.disconBtn:SetEnabled( false )
         rejoin()
     end )
 
@@ -380,8 +396,39 @@ local function makeLabel( frame, text, top, col, xFraction, font )
         self:CenterHorizontal( xFraction )
     end
     label:setTextAndAlign( text )
+
     return label
 end
+
+local function makeDiscordRow( frame )
+    local row = vgui.Create( "DPanel", frame )
+    row:SetSize( frame:GetWide(), 64 )
+    row:SetPos( 0, frame:GetTall() - 64 )
+    row.Paint = nil
+
+    local labelHolder = vgui.Create( "DPanel", row )
+    local holderWidth = frame:GetWide() / 4
+    labelHolder:SetSize( frame:GetWide() / 4, 64 )
+    labelHolder:SetPos( frame:GetWide() / 2 - (holderWidth / 2), 0 )
+    labelHolder.Paint = nil
+
+    local label = makeLabel( labelHolder, "Join our Discord!", 0, whiteCol, 0.5, "CFC_Special_Small" )
+    label:SetSize( frame:GetWide() / 6, 64 )
+    label:Dock( LEFT )
+
+    local linkColor = Color( 41, 182, 246 )
+    local link = makeLabel( labelHolder, "discord.gg/cfcservers", 0, linkColor, 0.5, "CFC_Mono_Small" )
+    label:SetSize( frame:GetWide() / 6, 64 )
+    link:Dock( RIGHT )
+    link:SetMouseInputEnabled( true )
+    link.DoClick = function()
+        gui.OpenURL( "https://discord.gg/cfcservers" )
+    end
+    link:SetCursor( "hand" )
+
+    return row
+end
+
 
 -- Text for internet down on body
 local function populateBodyInternetDown( body )
@@ -496,6 +543,7 @@ local function createInterface()
     -- Generate title and buttons bars
     local titlePanel = addTitleBar( frame )
     local buttonsPanel = addButtonsBar( frame )
+    local discordRow = makeDiscordRow( frame )
 
     -- Create body that fills the unused space
     local _, y = buttonsPanel:GetPos()
