@@ -32,9 +32,15 @@ local function _pingLoop()
     if pingLoopRunning then return end
     pingLoopRunning = true
 
+    await( NP.timeout( math.Rand( 1, 10 ) ) )
+
     while pongerStatus do
+        -- Randomize the delay to avoid a thundering herd problem
+        -- (And attempt to take full advantage of CF caching)
+        local delay = math.Rand( 2, 8 )
+
+        await( NP.timeout( delay ) )
         await( CFCCrashAPI.ping() )
-        await( NP.timeout( API_TIMEOUT ) )
     end
 
     pingLoopRunning = false
