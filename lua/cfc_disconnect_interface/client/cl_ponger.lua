@@ -3,8 +3,6 @@ include( "cfc_disconnect_interface/client/cl_api.lua" )
 local GRACE_TIME = 3.5 -- How many seconds of lag should we have before showing the panel?
 local PING_MISS = 2 -- How many pings can we miss on join?
 
-local API_TIMEOUT = 5 -- How often to call the api
-
 local lastPong
 
 local pongerStatus = false
@@ -28,15 +26,16 @@ end
 net.Receive( "CFC_DisconnectInterface_Shutdown", shutdown )
 hook.Add( "ShutDown", "CFC_DisconnectInterface_Cleanup", shutdown )
 
-local function _pingLoop()
+local pingLoop = async( function()
     if pingLoopRunning then return end
     pingLoopRunning = true
 
+    -- Randomize the inital delay to avoid a thundering herd problem
+    -- (And attempt to take full advantage of CF caching)
     await( NP.timeout( math.Rand( 1, 10 ) ) )
 
     while pongerStatus do
-        -- Randomize the delay to avoid a thundering herd problem
-        -- (And attempt to take full advantage of CF caching)
+        -- Randomize followup checks to balance the load out
         local delay = math.Rand( 2, 8 )
 
         await( NP.timeout( delay ) )
@@ -44,8 +43,7 @@ local function _pingLoop()
     end
 
     pingLoopRunning = false
-end
-pingLoop = async( _pingLoop )
+end )
 
 local function checkCrashTick()
     if not lastPong then return end

@@ -16,23 +16,35 @@ api.SERVER_UP = 4
 api.state = api.INACTIVE
 api.stateOverride = nil
 
-function api._checkCFCEndpoint()
+api.checkCFCEndpoint = async( function()
     local success, body = await( NP.http.fetch( endpointCFC ) )
 
     if not success then return false end
 
     local data = util.JSONToTable( body )
     return tobool( data and data.status == "server-is-up" )
-end
-api.checkCFCEndpoint = async( api._checkCFCEndpoint )
+end )
 
-function api._checkGlobalEndpoint()
+local isOnline = nil
+api.checkGlobalEndpoint = async( function()
+    if isOnline then return isOnline end
+
     local success = await( NP.http.fetch( endpointGlobal ) )
-    return success
-end
-api.checkGlobalEndpoint = async( api._checkGlobalEndpoint )
 
-function api._ping()
+    -- Cache a successful google check for 30 seconds
+    -- (We don't need to re-check google if we've already confirmed that we have internet)
+    -- (A failed check is not cached and is re-checked every interval)
+    if success then
+        isOnline = true
+        timer.Create( "CFC_DisconnectInterface_GlobalEndpointCache", 30, 1, function()
+            isOnline = nil
+        end )
+    end
+
+    return success
+end )
+
+api.ping = async( function()
     if api.stateOverride then return api.stateOverride end
 
     api.state = api.PINGING_API
@@ -49,8 +61,7 @@ function api._ping()
     end
 
     return api.state
-end
-api.ping = async( api._ping )
+end )
 
 function api.getState()
     return api.stateOverride or api.state
