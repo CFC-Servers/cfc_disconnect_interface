@@ -417,12 +417,12 @@ local function makeDiscordRow( frame )
     label:Dock( LEFT )
 
     local linkColor = Color( 41, 182, 246 )
-    local link = makeLabel( labelHolder, "discord.gg/cfcservers", 0, linkColor, 0.5, "CFC_Mono_Small" )
+    local link = makeLabel( labelHolder, "cfc.gg/discord", 0, linkColor, 0.5, "CFC_Mono_Small" )
     label:SetSize( frame:GetWide() / 6, 64 )
     link:Dock( RIGHT )
     link:SetMouseInputEnabled( true )
     link.DoClick = function()
-        gui.OpenURL( "https://discord.gg/cfcservers" )
+        gui.OpenURL( "https://cfc.gg/discord" )
     end
     link:SetCursor( "hand" )
 
