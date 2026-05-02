@@ -89,7 +89,7 @@ end
 
 local function rejoin()
     dTimer.Simple( 1, function()
-        RunConsoleCommand( "snd_restart" ) -- Restarts sound engine, good practice?
+        RunConsoleCommand( "stopsound" )
         RunConsoleCommand( "retry" )
     end )
 end
