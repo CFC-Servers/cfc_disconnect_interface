@@ -89,7 +89,11 @@ end
 
 local function rejoin()
     dTimer.Simple( 1, function()
-        RunConsoleCommand( "snd_restart" ) -- Restarts sound engine, good practice?
+        if system.IsLinux() or system.IsOSX then
+            RunConsoleCommand( "stopsound" ) -- snd_restart crashes on linux/macos native
+        else
+            RunConsoleCommand( "snd_restart" ) -- Restarts sound engine, good practice?
+        end
         RunConsoleCommand( "retry" )
     end )
 end
